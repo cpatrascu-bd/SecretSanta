@@ -7,13 +7,15 @@ class ReturnCodes(Enum):
     USED_EMAIL = -2
     INVALID_EMAIL = -3
     UNKNOWN_ERROR = -4
-    WRONG_USER = -5
-    WRONG_PASSWORD = -6
+    WRONG_FORMAT_USERNAME = -5
+    WRONG_FORMAT_PASSWORD = -6
+    INVALID_USER = -7
+    INVALID_PASSWORD = -8
 
 
 class Client():
 
-    def register(self, name, password, email):
+    def create_user(self, name, password, email):
         if name == 'valid':
             return ReturnCodes.SUCCESS
         if name == 'used_name':
@@ -24,14 +26,18 @@ class Client():
             return ReturnCodes.INVALID_EMAIL
         if name == 'error':
             return ReturnCodes.UNKNOWN_ERROR
+        if name == 'wfu':
+            return ReturnCodes.WRONG_FORMAT_USERNAME
+        if password == 'wfp':
+            return ReturnCodes.WRONG_FORMAT_PASSWORD
 
-    def authorize(self, name, password):
+    def login(self, name, password):
         if name == 'valid':
             return ReturnCodes.SUCCESS
         if name == 'wrong_user':
-            return ReturnCodes.WRONG_USER
+            return ReturnCodes.INVALID_USER
         if password == 'wrong_password':
-            return ReturnCodes.WRONG_PASSWORD
+            return ReturnCodes.INVALID_PASSWORD
         if name == 'error':
             return ReturnCodes.UNKNOWN_ERROR
 
@@ -39,18 +45,18 @@ class Client():
 # usage example
 client = Client()
 
-print(client.register('valid','a','a'))
-print(client.register('used_name', 'a','a'))
-print(client.register('used_email','a', 'used_email'))
-print(client.register('invalid_email','a', 'invalid_email'))
-print(client.register('error', 'a', 'a'))
+print(client.create_user('valid','a','a'))
+print(client.create_user('used_name', 'a','a'))
+print(client.create_user('used_email','a', 'used_email'))
+print(client.create_user('invalid_email','a', 'invalid_email'))
+print(client.create_user('error', 'a', 'a'))
 
 print()
 
-print(client.authorize('valid', 'a'))
-print(client.authorize('wrong_user', 'a'))
-print(client.authorize('a', 'wrong_password'))
-print(client.authorize('error', 'a'))
+print(client.login('valid', 'a'))
+print(client.login('wrong_user', 'a'))
+print(client.login('a', 'wrong_password'))
+print(client.login('error', 'a'))
 
 
 
