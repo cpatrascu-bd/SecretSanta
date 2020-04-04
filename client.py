@@ -22,9 +22,8 @@ class Utils():
     email_pattern = re.compile(".+@.+\..+")
 
     @staticmethod
-    def encrypt_string(hash_string):
-        sha_signature = \
-            hashlib.sha256(hash_string.encode()).hexdigest()
+    def encrypt_string(string):
+        sha_signature = hashlib.sha256(string.encode()).hexdigest()
         return sha_signature
 
     @staticmethod
@@ -41,7 +40,7 @@ class Utils():
 
 class Client():
     def __init__(self):
-        self.token = 0
+        self.token = ""
 
     def create_user(self, name, password, email):
         if len(name) < 3:
@@ -51,13 +50,13 @@ class Client():
         if not Utils.email_pattern.match(email):
             return ReturnCodes.INVALID_EMAIL
 
-
         sha_password = Utils.encrypt_string(password)
         message = "CREATE ACCOUNT " + name + " " + sha_password + " " + email
         answer = Utils.send_message_to_server(message)
 
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
+
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         else:

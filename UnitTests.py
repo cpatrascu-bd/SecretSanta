@@ -4,7 +4,10 @@ client = Client()
 
 
 def unit_test_create_user():
-    os.remove('utilizatori.json')
+    try:
+        os.remove('utilizatori.json')
+    except:
+        print("utilizatori.json does not exist")
     print(client.create_user('cristi','cristi', 'a@b.c'))
     print(client.create_user('cristi', 'cristi', 'a@b.c'))
     print(client.create_user('cristi2', 'cristi', 'a@b.c'))
