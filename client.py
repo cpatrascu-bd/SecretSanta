@@ -1,5 +1,10 @@
 from enum import Enum
+import re
+import hashlib
+import socket
 
+HOST = '127.0.0.1'
+PORT = 9001
 
 class ReturnCodes(Enum):
     SUCCESS = 0
@@ -11,52 +16,73 @@ class ReturnCodes(Enum):
     WRONG_FORMAT_PASSWORD = -6
     INVALID_USER = -7
     INVALID_PASSWORD = -8
+    CONNECTION_ERROR = -9
+
+class Utils():
+    email_pattern = re.compile(".+@.+\..+")
+
+    @staticmethod
+    def encrypt_string(hash_string):
+        sha_signature = \
+            hashlib.sha256(hash_string.encode()).hexdigest()
+        return sha_signature
+
+    @staticmethod
+    def send_message_to_server(message):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((HOST, PORT))
+                s.sendall(message.encode())
+                data = s.recv(1024)
+            return data.decode()
+        except:
+            return 'communication_error'
 
 
 class Client():
+    def __init__(self):
+        self.token = 0
 
     def create_user(self, name, password, email):
-        if name == 'valid':
-            return ReturnCodes.SUCCESS
-        if name == 'used_name':
-            return ReturnCodes.USED_NAME
-        if email == 'used_email':
-            return ReturnCodes.USED_EMAIL
-        if email == 'invalid_email':
-            return ReturnCodes.INVALID_EMAIL
-        if name == 'error':
-            return ReturnCodes.UNKNOWN_ERROR
-        if name == 'wfu':
+        if len(name) < 3:
             return ReturnCodes.WRONG_FORMAT_USERNAME
-        if password == 'wfp':
+        if len(password) < 6:
             return ReturnCodes.WRONG_FORMAT_PASSWORD
+        if not Utils.email_pattern.match(email):
+            return ReturnCodes.INVALID_EMAIL
+
+
+        sha_password = Utils.encrypt_string(password)
+        message = "CREATE ACCOUNT " + name + " " + sha_password + " " + email
+        answer = Utils.send_message_to_server(message)
+
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        else:
+            if answer[2:] == 'Username already taken':
+                return ReturnCodes.USED_NAME
+            if answer[2:] == 'Email already taken':
+                return ReturnCodes.USED_EMAIL
+        return ReturnCodes.UNKNOWN_ERROR
 
     def login(self, name, password):
-        if name == 'valid':
+        sha_password = Utils.encrypt_string(password)
+        message = "AUTH " + name + " " + sha_password
+        answer = Utils.send_message_to_server(message)
+        if answer == 'connection_error':
+            return ReturnCodes.CONNECTION_ERROR
+        if answer[0] == '1':
+            self.token = answer[2:]
             return ReturnCodes.SUCCESS
-        if name == 'wrong_user':
-            return ReturnCodes.INVALID_USER
-        if password == 'wrong_password':
-            return ReturnCodes.INVALID_PASSWORD
-        if name == 'error':
-            return ReturnCodes.UNKNOWN_ERROR
+        else:
+            if answer[2:] == 'Invalid username':
+                return ReturnCodes.INVALID_USER
+            if answer[2:] == 'Invalid password':
+                return ReturnCodes.INVALID_PASSWORD
+        return ReturnCodes.UNKNOWN_ERROR
 
-
-# usage example
-client = Client()
-
-print(client.create_user('valid','a','a'))
-print(client.create_user('used_name', 'a','a'))
-print(client.create_user('used_email','a', 'used_email'))
-print(client.create_user('invalid_email','a', 'invalid_email'))
-print(client.create_user('error', 'a', 'a'))
-
-print()
-
-print(client.login('valid', 'a'))
-print(client.login('wrong_user', 'a'))
-print(client.login('a', 'wrong_password'))
-print(client.login('error', 'a'))
 
 
 
