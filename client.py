@@ -43,6 +43,7 @@ class Client():
         self.token = ""
 
     def create_user(self, name, password, email):
+
         if len(name) < 3:
             return ReturnCodes.WRONG_FORMAT_USERNAME
         if len(password) < 6:

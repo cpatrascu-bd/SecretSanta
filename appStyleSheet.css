@@ -1,0 +1,35 @@
+Authentication {
+    border-image: url("main-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+Dashboard {
+    border-image: url("main-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+AuthForm {
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+CreateGroupGUI{
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+CreateTemplateGUI{
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+ViewTemplates {
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
