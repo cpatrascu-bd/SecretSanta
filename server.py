@@ -17,6 +17,7 @@ EMAIL_SCRIPT = './script.py'
 GROUPS = './groups/'
 TEMPLATES = './templates/'
 REQUESTS = './requests.json'
+LOG = './logs.txt'
 
 # Socket specific declarations
 MAX_BUFFER = 4096
@@ -288,16 +289,21 @@ def parse_command(data):
                 return request_accept(items[2], items[3], items[4])
             if items[1] == 'DENY':
                 return request_deny(items[2], items[3], items[4])
-    except error as e:
-        print('Too few arguments\n{}'.format(str(e)))
+
+        return FAIL, 'Command does not exist'
+    except IndexError:
+        return FAIL, 'Too few arguments'
 
 
 def connection_thread(conn, address):
     # Define the behavior of a threat
     data = conn.recv(MAX_BUFFER).decode('utf-8').rstrip()
-    print("{} from client {}".format(data, address))
-
     status, response = parse_command(data)
+
+    with open(LOG, 'a') as log:
+        log.write("{} from client {}\n".format(data, address))
+        log.write('Response: {} {}\n\n'.format(status, response))
+
     conn.send(bytes("{} {}".format(status, response).encode('utf-8')))
     conn.close()
 
@@ -308,9 +314,8 @@ def main():
     while True:
         try:
             client, address = sock.accept()
-            print("New connection from {}".format(address))
             start_new_thread(connection_thread, (client, address))
-        except error as e:
+        except Exception as e:
             print('Closing server due to unexpected error\n{}'.format(str(e)))
             sock.close()
 
