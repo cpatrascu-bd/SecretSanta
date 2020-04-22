@@ -1,46 +1,9 @@
-from enum import Enum
-import re
-import hashlib
-import socket
-
-HOST = '127.0.0.1'
-PORT = 9001
-
-class ReturnCodes(Enum):
-    SUCCESS = 0
-    USED_NAME = -1
-    USED_EMAIL = -2
-    INVALID_EMAIL = -3
-    UNKNOWN_ERROR = -4
-    WRONG_FORMAT_USERNAME = -5
-    WRONG_FORMAT_PASSWORD = -6
-    INVALID_USER = -7
-    INVALID_PASSWORD = -8
-    CONNECTION_ERROR = -9
-
-class Utils():
-    email_pattern = re.compile(".+@.+\..+")
-
-    @staticmethod
-    def encrypt_string(string):
-        sha_signature = hashlib.sha256(string.encode()).hexdigest()
-        return sha_signature
-
-    @staticmethod
-    def send_message_to_server(message):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((HOST, PORT))
-                s.sendall(message.encode())
-                data = s.recv(1024)
-            return data.decode()
-        except:
-            return 'communication_error'
-
-
+from utils import *
 class Client():
     def __init__(self):
-        self.token = ""
+        self.token = "beforelogin"
+        self.username = ''
+        self.requests = []
 
     def create_user(self, name, password, email):
 
@@ -74,14 +37,165 @@ class Client():
         if answer == 'connection_error':
             return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '1':
-            self.token = answer[2:]
+            self.logout()
             return ReturnCodes.SUCCESS
         else:
-            if answer[2:] == 'Invalid username':
+            if answer[2:] == 'Incorrect username':
                 return ReturnCodes.INVALID_USER
-            if answer[2:] == 'Invalid password':
+            if answer[2:] == 'Incorrect password':
                 return ReturnCodes.INVALID_PASSWORD
         return ReturnCodes.UNKNOWN_ERROR
+
+    def create_group(self, name, password):
+        passwordHash = Utils.encrypt_string(password)
+        message = 'CREATE GROUP ' + name + ' ' + passwordHash + ' ' + self.token
+        answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        else:
+            if answer[2:] == 'Token not valid. Please re-authenticate':
+                self.logout()
+                return ReturnCodes.RELOGIN
+            if answer[2:] == 'Group name already exists':
+                return ReturnCodes.USED_GROUP_NAME
+            return ReturnCodes.UNKNOWN_ERROR
+
+    def create_template(self, name, text):
+        message = 'CREATE TEMPLATE ' + name + ' ' + self.token + ' ' + text
+        answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        if answer[2:] == 'Template name already exists':
+            return ReturnCodes.USED_TEMPLATE_NAME
+        return ReturnCodes.UNKNOWN_ERROR
+
+    def join_group_with_pass(self, group_name, group_pass):
+        password_hash = Utils.encrypt_string(group_pass)
+        message = 'REQUEST JOINP ' + ' '.join([self.username, group_name, password_hash, self.token])
+        answer = Utils.send_message_to_server(message)
+        print(answer)
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        if answer[2:] == 'Token not valid. Please re-authenticate':
+            self.logout
+            return ReturnCodes.RELOGIN
+        if answer[2:] == 'Group does not exist':
+            return ReturnCodes.INVALID_GROUP
+        if answer[2:] == 'Incorrect password':
+            return ReturnCodes.INVALID_PASSWORD
+        if answer[2:] == 'Username already enrolled':
+            return ReturnCodes.ALREADY_ENROLLED
+        return ReturnCodes.UNKNOWN_ERROR
+
+    def request_join_group(self, group_name):
+        message = 'REQUEST JOIN ' + ' '.join([self.username, group_name, self.token])
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        if answer[2:] == 'Token not valid. Please re-authenticate':
+            self.logout()
+            return ReturnCodes.RELOGIN
+        if answer[2:] == 'Group does not exist':
+            return ReturnCodes.INVALID_GROUP
+        if answer[2:] == 'Request already exists':
+            return ReturnCodes.REQUEST_ALREADY_EXISTS
+        return ReturnCodes.UNKNOWN_ERROR
+
+    def get_requests(self):
+        message = 'FETCH REQUESTS ' + self.token
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '1':
+            # TODO get requests from answer
+            return ReturnCodes.SUCCESS, self.requests
+
+    def answer_request(self, index, type):
+        request = self.requests[index]
+        message = 'REQUEST ' + type + ' ' + ' '.join[request[0] + request[1] + request[2]]
+        answer = Utils.send_message_to_server(message)
+        return_code = Utils.request_answer_check(answer)
+        if return_code == ReturnCodes.RELOGIN:
+            self.logout()
+        return return_code
+
+    def get_groups(self):
+        message = 'FETCH GROUPS ' + self.token
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '0':
+            return Utils.get_error_check(answer)
+        groups = answer[3:-1].replace("'", '').split(", ")
+        return ReturnCodes.SUCCESS, groups
+
+    def get_group(self, name):
+        message = 'FETCH GROUP ' + name + ' ' + self.token
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '0':
+            return Utils.get_error_check(answer)
+        group_users = answer[3:-1].replace("'", '').split(", ")
+        return ReturnCodes.SUCCESS, group_users
+
+    def get_templates(self):
+        message = 'FETCH TEMPLATES ' + self.token
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '0':
+            return Utils.get_error_check(answer)
+        templates = answer[3:-1].replace("'", '').split(", ")
+        return ReturnCodes.SUCCESS, templates
+
+    def get_template(self, name):
+        message = 'FETCH TEMPLATE ' + name + ' ' + self.token
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '0':
+            return Utils.get_error_check(answer)
+        return ReturnCodes.SUCCESS, answer[2:]
+
+    def exit_group(self, group_name):
+        return self.remove_user(self.username, group_name)
+
+    def remove_user(self, username, group_name):
+        message = 'REQUEST REMOVE ' + ' '.join([username, group_name, self.token])
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        if answer[2:] == 'User not in group':
+            return ReturnCodes.INVALID_USER
+        if answer[2:] == 'Group does not exist':
+            return ReturnCodes.INVALID_GROUP
+        if answer[2:] == 'User not admin of the group':
+            return ReturnCodes.NOT_ADMIN
+        return ReturnCodes.UNKNOWN_ERROR
+
+    def delete_group(self, group_name):
+        message = 'REQUEST DELETE ' + ' '.join([group_name, self.token])
+        answer = Utils.send_message_to_server(message)
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        if answer[2:] == 'Group does not exist':
+            return ReturnCodes.INVALID_GROUP
+        if answer[2:] == 'User not admin of the group':
+            return ReturnCodes.NOT_ADMIN
+        return ReturnCodes.UNKNOWN_ERROR
+
+    def logout(self):
+        self.token = 'beforelogin'
+        self.username = ''
+        self.requests = []
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

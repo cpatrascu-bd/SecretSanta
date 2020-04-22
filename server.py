@@ -153,8 +153,7 @@ def get_group(name, token):
 
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
-
-    return SUCCESS, get_file_content(GROUPS + name + '.json')
+    return SUCCESS, get_file_content(GROUPS + name + '.json')[1:]
 
 
 def get_templates(token):
