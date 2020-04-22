@@ -26,9 +26,8 @@ HOST = '127.0.0.1'
 PORT = 9001
 sock = socket.socket()
 
-# Data kept in the program's memory
+# Session tokens for authenticated users
 tokens = {}
-groups = {}
 
 
 def init():
@@ -48,6 +47,7 @@ def init():
 
 
 def get_file_content(file):
+    # Retrieve json file content
     with open(file, 'r') as f:
         content = json.load(f)
     return content
@@ -87,8 +87,7 @@ def create_account(username, password_hash, email):
     data = {'username': username, 'password': password_hash, 'email': email}
 
     if os.path.isfile(CREDENTIALS):
-        accounts = json.loads(open(CREDENTIALS).read())
-        for account in accounts:
+        for account in json.loads(open(CREDENTIALS).read()):
             if account['username'] == username:
                 return FAIL, 'Username already taken'
 
@@ -101,8 +100,7 @@ def login(username, password_hash):
     if not os.path.isfile(CREDENTIALS):
         return FAIL, 'Incorrect username'
 
-    accounts = json.loads(open(CREDENTIALS).read())
-    for account in accounts:
+    for account in json.loads(open(CREDENTIALS).read()):
         if account['username'] == username and account['password'] == password_hash:
             tokens[username] = generate_token(username, password_hash)
             return SUCCESS, tokens[username]
@@ -110,6 +108,17 @@ def login(username, password_hash):
             return FAIL, 'Incorrect password'
 
     return FAIL, 'Incorrect username'
+
+
+def logout(token):
+    # Log out the user by removing the session token
+    if token not in tokens.values():
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    user = [user for user, tok in tokens.items() if token == tok][0]
+    del tokens[user]
+
+    return SUCCESS, 'User successfully logged out'
 
 
 def create_group(name, password_hash, token):
@@ -121,10 +130,23 @@ def create_group(name, password_hash, token):
     if os.path.isfile(filename):
         return FAIL, 'Group name already exists'
 
-    groups[name] = [key for key, value in tokens.items() if value == token][0]
-
+    user = [user for user, tok in tokens.items() if tok == token][0]
     insert_into_file(filename, password_hash)
+    insert_into_file(filename, user)
+
     return SUCCESS, 'Group {} created'.format(name.split('.')[0])
+
+
+def delete_group(name, token):
+    # Check if token belongs to group owner and delete the whole group file
+    if name not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
+        return FAIL, 'Group does not exist'
+
+    if token not in tokens.values() or get_group_admin(name) not in tokens.keys() or tokens[get_group_admin(name)] != token:
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    os.remove(GROUPS + name + '.json')
+    return SUCCESS, 'Group successfully removed'
 
 
 def create_template(name, token, text):
@@ -140,6 +162,10 @@ def create_template(name, token, text):
     return SUCCESS, 'Template {} created'.format(name.split('.')[0])
 
 
+def get_group_admin(name):
+    return get_file_content(GROUPS + name + '.json')[1]
+
+
 def get_groups(token):
     # List the groups folder in order to get all templates names
     if token not in tokens.values():
@@ -150,9 +176,9 @@ def get_groups(token):
 
 def get_group(name, token):
     # Get a specific group data by retrieving the file content
-
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
+
     return SUCCESS, get_file_content(GROUPS + name + '.json')[1:]
 
 
@@ -190,6 +216,17 @@ def add_to_group(username, group, password_hash, token):
     return SUCCESS, 'User added to group'
 
 
+def get_requests(token):
+    # Check if token is valid and retrieve all join requests for it's groups
+    if token not in tokens.values():
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    groups = [group for group in get_groups(token)[1] if tokens[get_group_admin(group)] == token]
+    requests = [request for request in get_file_content(REQUESTS) if request['group'] in groups]
+
+    return requests
+
+
 def request_join(username, group, token):
     # Check user privileges and if data is valid and then add the request to the file
     if username not in tokens.keys() or tokens[username] != token:
@@ -225,7 +262,7 @@ def request_accept(username, group, token):
 
     # Check if the user accepting is the group's admin
     user = [user for user, tok in tokens.items() if token == tok]
-    if user and groups[group] == user[0]:
+    if user and get_group_admin(group) == user[0]:
         remove_from_file(REQUESTS, data)
         insert_into_file(GROUPS + group + '.json', username)
         return SUCCESS, 'Request accepted'
@@ -246,11 +283,30 @@ def request_deny(username, group, token):
         return FAIL, 'Request does not exists'
 
     user = [user for user, tok in tokens.items() if token == tok]
-    if user and groups[group] == user[0]:
+    if user and get_group_admin(group) == user[0]:
         remove_from_file(REQUESTS, data)
         return SUCCESS, 'Request denied'
 
     return FAIL, 'User not admin of the group'
+
+
+def request_unjoin(username, group, token):
+    # Check user privileges and if data is valid and then remove group from group
+    if username not in tokens.keys() or tokens[username] != token:
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
+        return FAIL, 'Group does not exist'
+
+    if username == get_group_admin(group):
+        return FAIL, 'Admin can not leave the group'
+
+    filename = GROUPS + group + '.json'
+    if username not in get_file_content(filename):
+        return FAIL, 'Username not in group'
+
+    remove_from_file(filename, username)
+    return SUCCESS, 'Username successfully removed from group'
 
 
 def parse_command(data):
@@ -275,6 +331,8 @@ def parse_command(data):
                 return get_templates(items[2])
             if items[1] == 'TEMPLATE':
                 return get_template(items[2], items[3])
+            if items[1] == 'REQUESTS':
+                return get_requests(items[2])
 
         if items[0] == 'AUTH':
             return login(items[1], items[2])
@@ -288,6 +346,15 @@ def parse_command(data):
                 return request_accept(items[2], items[3], items[4])
             if items[1] == 'DENY':
                 return request_deny(items[2], items[3], items[4])
+            if items[1] == "UNJOIN":
+                return request_unjoin(items[2], items[3], items[4])
+
+        if items[0] == 'DELETE':
+            if items[1] == 'GROUP':
+                return delete_group(items[2], items[3])
+
+        if items[0] == 'LOGOUT':
+            return logout(items[1])
 
         return FAIL, 'Command does not exist'
     except IndexError:
