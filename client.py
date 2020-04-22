@@ -172,13 +172,16 @@ class Client():
             return Utils.get_error_check(answer)
         return ReturnCodes.SUCCESS, answer[2:]
 
+    def send_emails(self, group):
+        pass
+
     def exit_group(self, group_name):
         return self.remove_user(self.username, group_name)
 
     def remove_user(self, username, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REQUEST REMOVE ' + ' '.join([username, group_name, self.token])
+        message = 'REMOVE USER' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
@@ -193,7 +196,7 @@ class Client():
     def delete_group(self, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REQUEST DELETE ' + ' '.join([group_name, self.token])
+        message = 'DELETE GROUP' + ' '.join([group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
@@ -206,7 +209,7 @@ class Client():
     def logout(self):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REQUEST LOGOUT ' + self.token
+        message = 'LOGOUT ' + self.token
         answer = Utils.send_message_to_server(message)
         self.token = ''
         self.username = ''
@@ -214,6 +217,12 @@ class Client():
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         return ReturnCodes.UNKNOWN_ERROR
+
+    def send_emails(self, group_name):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
+        message = 'REQUEST '
+
 
 
 
