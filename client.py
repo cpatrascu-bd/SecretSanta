@@ -1,7 +1,7 @@
 from utils import *
 class Client():
     def __init__(self):
-        self.token = "beforelogin"
+        self.token = ""
         self.username = ''
         self.requests = []
 
@@ -48,6 +48,8 @@ class Client():
 
     def create_group(self, name, password):
         passwordHash = Utils.encrypt_string(password)
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'CREATE GROUP ' + name + ' ' + passwordHash + ' ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
@@ -63,6 +65,8 @@ class Client():
             return ReturnCodes.UNKNOWN_ERROR
 
     def create_template(self, name, text):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'CREATE TEMPLATE ' + name + ' ' + self.token + ' ' + text
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
@@ -74,6 +78,8 @@ class Client():
         return ReturnCodes.UNKNOWN_ERROR
 
     def join_group_with_pass(self, group_name, group_pass):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         password_hash = Utils.encrypt_string(group_pass)
         message = 'REQUEST JOINP ' + ' '.join([self.username, group_name, password_hash, self.token])
         answer = Utils.send_message_to_server(message)
@@ -92,6 +98,8 @@ class Client():
         return ReturnCodes.UNKNOWN_ERROR
 
     def request_join_group(self, group_name):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'REQUEST JOIN ' + ' '.join([self.username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer[0] == '1':
@@ -106,6 +114,8 @@ class Client():
         return ReturnCodes.UNKNOWN_ERROR
 
     def get_requests(self):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'FETCH REQUESTS ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '1':
@@ -113,6 +123,8 @@ class Client():
             return ReturnCodes.SUCCESS, self.requests
 
     def answer_request(self, index, type):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         request = self.requests[index]
         message = 'REQUEST ' + type + ' ' + ' '.join[request[0] + request[1] + request[2]]
         answer = Utils.send_message_to_server(message)
@@ -122,6 +134,8 @@ class Client():
         return return_code
 
     def get_groups(self):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'FETCH GROUPS ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
@@ -130,6 +144,8 @@ class Client():
         return ReturnCodes.SUCCESS, groups
 
     def get_group(self, name):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'FETCH GROUP ' + name + ' ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
@@ -138,6 +154,8 @@ class Client():
         return ReturnCodes.SUCCESS, group_users
 
     def get_templates(self):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'FETCH TEMPLATES ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
@@ -146,6 +164,8 @@ class Client():
         return ReturnCodes.SUCCESS, templates
 
     def get_template(self, name):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'FETCH TEMPLATE ' + name + ' ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
@@ -156,6 +176,8 @@ class Client():
         return self.remove_user(self.username, group_name)
 
     def remove_user(self, username, group_name):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'REQUEST REMOVE ' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer[0] == '1':
@@ -169,6 +191,8 @@ class Client():
         return ReturnCodes.UNKNOWN_ERROR
 
     def delete_group(self, group_name):
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
         message = 'REQUEST DELETE ' + ' '.join([group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer[0] == '1':
@@ -180,9 +204,17 @@ class Client():
         return ReturnCodes.UNKNOWN_ERROR
 
     def logout(self):
-        self.token = 'beforelogin'
+        if self.token == '':
+            return ReturnCodes.NOT_AUTH
+        message = 'REQUEST LOGOUT ' + self.token
+        answer = Utils.send_message_to_server(message)
+        self.token = ''
         self.username = ''
         self.requests = []
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        return ReturnCodes.UNKNOWN_ERROR
+
 
 
 

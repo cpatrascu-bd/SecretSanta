@@ -25,6 +25,7 @@ class ReturnCodes(Enum):
     NOT_ADMIN = -15
     ALREADY_ENROLLED = -16
     INVALID_REQUEST = -17
+    NOT_AUTH = -18
 
 
 class Answer(Enum):
