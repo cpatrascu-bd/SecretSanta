@@ -1,7 +1,7 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-import Auth
+import auth
 
 TEMPLATE_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230);" \
                              "background: none;"

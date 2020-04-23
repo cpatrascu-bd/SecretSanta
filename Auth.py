@@ -2,7 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from client import *
-import Dashboard
+import dashboard
 
 UNKNOWN_ERROR_TEXT = 'Ooops, something went wrong, please try again later'
 WARNING = 'Warning'
