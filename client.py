@@ -147,7 +147,7 @@ class Client():
 
     def get_groups(self):
         if self.token == '':
-            return ReturnCodes.NOT_AUTH
+            return ReturnCodes.NOT_AUTH, []
         message = 'FETCH GROUPS ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
@@ -157,7 +157,7 @@ class Client():
 
     def get_group(self, name):
         if self.token == '':
-            return ReturnCodes.NOT_AUTH
+            return ReturnCodes.NOT_AUTH, []
         message = 'FETCH GROUP ' + name + ' ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
@@ -167,7 +167,7 @@ class Client():
 
     def get_templates(self):
         if self.token == '':
-            return ReturnCodes.NOT_AUTH
+            return ReturnCodes.NOT_AUTH, []
         message = 'FETCH TEMPLATES ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
