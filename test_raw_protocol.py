@@ -73,8 +73,10 @@ send_message('REQUEST JOIN doru grup3 {}'.format(token1))
 send_message('REQUEST JOIN andrei grup5 {}'.format(token))
 
 
-# View all requests
-send_message('FETCH REQUESTS {}'.format(token))
+# View all requests for invalid group
+send_message('FETCH REQUESTS grup8{}'.format(token))
+# View requests valid group
+send_message('FETCH REQUESTS grup2{}'.format(token))
 
 
 # Accept request, wrong admin

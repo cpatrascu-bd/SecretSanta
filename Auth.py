@@ -2,7 +2,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from client import *
-import Dashboard
+import dashboard
 
 UNKNOWN_ERROR_TEXT = 'Ooops, something went wrong, please try again later'
 WARNING = 'Warning'
@@ -18,6 +18,7 @@ INVALID_PASSWORD = 'You have introduced an invalid password. Please insert the v
 LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230);"
 AUTH_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba(0,0,0,50);"
 
+
 def alert(type, title, text):
         alert = QMessageBox()
         if type == WARNING:
@@ -28,6 +29,7 @@ def alert(type, title, text):
         alert.setText(text)
         alert.exec_()
         return
+
 
 class TransparentButton(QPushButton):
     def __init__(self, text="", font_size=14, parent=None):
@@ -56,6 +58,7 @@ class TransparentButton(QPushButton):
 
     def leaveEvent(self, event: QEvent) -> None:
         self.opacity = 0.6
+
 
 class AuthForm(QDialog):
     def __init__(self, type , client=None, parent=None):

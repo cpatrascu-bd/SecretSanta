@@ -216,20 +216,17 @@ def add_to_group(username, group, password_hash, token):
     return SUCCESS, 'User added to group'
 
 
-def get_requests(token, group):
-    # Check if token is valid and retrieve all join requests for it's groups
+def get_requests(group, token):
+    # Check if token is valid and retrieve all join requests for the group
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
 
     if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
         return FAIL, 'Group does not exist'
 
-    name = ''
-    for key, value in tokens.items():
-        if value == token:
-            name = key
-    if name != get_group_admin(group):
-        return FAIL, 'You are not admin of the group'
+    user = [user for user, tok in tokens.items() if tok == token][0]
+    if user != get_group_admin(group):
+        return FAIL, 'User not group\'s admin'
 
     requests = [request for request in get_file_content(REQUESTS) if request['group'] == group]
 
@@ -289,7 +286,7 @@ def request_deny(username, group, token):
 
     data = {'username': username, 'group': group}
     if os.path.isfile(REQUESTS) and data not in get_file_content(REQUESTS):
-        return FAIL, 'Request does not exist'
+        return FAIL, 'Request does not exists'
 
     user = [user for user, tok in tokens.items() if token == tok]
     if user and get_group_admin(group) == user[0]:

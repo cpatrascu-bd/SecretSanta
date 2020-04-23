@@ -1,8 +1,8 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-import Auth
-import Groups_GUI
-import Templates_GUI
+import auth
+import groups_gui
+import templates_gUI
 
 
 class Dashboard(QDialog):
