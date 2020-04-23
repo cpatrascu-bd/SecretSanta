@@ -230,8 +230,7 @@ def get_requests(token, group):
             name = key
     if name != get_group_admin(group):
         return FAIL, 'You are not admin of the group'
-    print(group)
-    print(get_file_content(REQUESTS))
+
     requests = [request for request in get_file_content(REQUESTS) if request['group'] == group]
 
     return SUCCESS, requests
@@ -290,7 +289,7 @@ def request_deny(username, group, token):
 
     data = {'username': username, 'group': group}
     if os.path.isfile(REQUESTS) and data not in get_file_content(REQUESTS):
-        return FAIL, 'Request does not exists'
+        return FAIL, 'Request does not exist'
 
     user = [user for user, tok in tokens.items() if token == tok]
     if user and get_group_admin(group) == user[0]:
