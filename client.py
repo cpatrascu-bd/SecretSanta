@@ -1,4 +1,5 @@
 from utils import *
+import ast
 class Client():
     def __init__(self):
         self.token = ""
@@ -37,7 +38,8 @@ class Client():
         if answer == 'connection_error':
             return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '1':
-            self.logout()
+            self.token = answer[2:]
+            self.username = name
             return ReturnCodes.SUCCESS
         else:
             if answer[2:] == 'Incorrect username':
@@ -83,7 +85,6 @@ class Client():
         password_hash = Utils.encrypt_string(group_pass)
         message = 'REQUEST JOINP ' + ' '.join([self.username, group_name, password_hash, self.token])
         answer = Utils.send_message_to_server(message)
-        print(answer)
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'Token not valid. Please re-authenticate':
@@ -102,6 +103,8 @@ class Client():
             return ReturnCodes.NOT_AUTH
         message = 'REQUEST JOIN ' + ' '.join([self.username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'Token not valid. Please re-authenticate':
@@ -113,20 +116,29 @@ class Client():
             return ReturnCodes.REQUEST_ALREADY_EXISTS
         return ReturnCodes.UNKNOWN_ERROR
 
-    def get_requests(self):
+    def get_requests(self, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'FETCH REQUESTS ' + self.token
+        message = 'FETCH REQUESTS ' + self.token + ' ' + group_name
         answer = Utils.send_message_to_server(message)
-        if answer[0] == '1':
-            # TODO get requests from answer
-            return ReturnCodes.SUCCESS, self.requests
 
-    def answer_request(self, index, type):
+
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
+
+        if answer[0] == '1':
+            requests = [request['username'] for request in ast.literal_eval(answer[2:])]
+            return ReturnCodes.SUCCESS, requests
+        if answer[2:] == 'Group does not exist':
+            return ReturnCodes.INVALID_GROUP
+        if answer[2:] == 'You are not admin of the group':
+            return ReturnCodes.NOT_ADMIN
+
+
+    def answer_request(self, username, group_name, ans_type):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        request = self.requests[index]
-        message = 'REQUEST ' + type + ' ' + ' '.join[request[0] + request[1] + request[2]]
+        message = 'REQUEST ' + ans_type + ' ' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         return_code = Utils.request_answer_check(answer)
         if return_code == ReturnCodes.RELOGIN:
@@ -165,7 +177,7 @@ class Client():
 
     def get_template(self, name):
         if self.token == '':
-            return ReturnCodes.NOT_AUTH
+            return ReturnCodes.NOT_AUTH, []
         message = 'FETCH TEMPLATE ' + name + ' ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
@@ -181,7 +193,7 @@ class Client():
     def remove_user(self, username, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REMOVE USER' + ' '.join([username, group_name, self.token])
+        message = 'REQUEST UNJOIN ' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
@@ -189,8 +201,10 @@ class Client():
             return ReturnCodes.INVALID_USER
         if answer[2:] == 'Group does not exist':
             return ReturnCodes.INVALID_GROUP
-        if answer[2:] == 'User not admin of the group':
+        if answer[2:] == 'You are not admin of the group':
             return ReturnCodes.NOT_ADMIN
+        if answer[2:] == 'Admin can not leave the group':
+            return ReturnCodes.YOU_ADMIN
         return ReturnCodes.UNKNOWN_ERROR
 
     def delete_group(self, group_name):

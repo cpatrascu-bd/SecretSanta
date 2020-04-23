@@ -216,15 +216,25 @@ def add_to_group(username, group, password_hash, token):
     return SUCCESS, 'User added to group'
 
 
-def get_requests(token):
+def get_requests(token, group):
     # Check if token is valid and retrieve all join requests for it's groups
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    groups = [group for group in get_groups(token)[1] if tokens[get_group_admin(group)] == token]
-    requests = [request for request in get_file_content(REQUESTS) if request['group'] in groups]
+    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
+        return FAIL, 'Group does not exist'
 
-    return requests
+    name = ''
+    for key, value in tokens.items():
+        if value == token:
+            name = key
+    if name != get_group_admin(group):
+        return FAIL, 'You are not admin of the group'
+    print(group)
+    print(get_file_content(REQUESTS))
+    requests = [request for request in get_file_content(REQUESTS) if request['group'] == group]
+
+    return SUCCESS, requests
 
 
 def request_join(username, group, token):
@@ -332,7 +342,7 @@ def parse_command(data):
             if items[1] == 'TEMPLATE':
                 return get_template(items[2], items[3])
             if items[1] == 'REQUESTS':
-                return get_requests(items[2])
+                return get_requests(items[2], items[3])
 
         if items[0] == 'AUTH':
             return login(items[1], items[2])

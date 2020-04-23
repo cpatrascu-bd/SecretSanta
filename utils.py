@@ -26,9 +26,9 @@ class ReturnCodes(Enum):
     ALREADY_ENROLLED = -16
     INVALID_REQUEST = -17
     NOT_AUTH = -18
+    YOU_ADMIN = -19
 
-
-class Answer(Enum):
+class Answer():
     ACCEPT = 'ACCEPT'
     DENY = 'DENY'
 
