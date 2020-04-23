@@ -228,8 +228,7 @@ def get_requests(group, token):
     if user != get_group_admin(group):
         return FAIL, 'User not group\'s admin'
 
-    groups = [group for group in get_groups(token)[1] if tokens[get_group_admin(group)] == token]
-    requests = [request for request in get_file_content(REQUESTS) if request['group'] in groups]
+    requests = [request for request in get_file_content(REQUESTS) if request['group'] == group]
 
     return SUCCESS, requests
 
