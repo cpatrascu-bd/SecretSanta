@@ -193,6 +193,8 @@ class Client():
             return ReturnCodes.NOT_AUTH
         message = 'REQUEST UNJOIN ' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
+        if answer[2:] == 'Token not valid. Please re-authenticate':
+            return ReturnCodes.RELOGIN
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'User not in group':
@@ -208,8 +210,9 @@ class Client():
     def delete_group(self, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'DELETE GROUP' + ' '.join([group_name, self.token])
+        message = 'DELETE GROUP ' + ' '.join([group_name, self.token])
         answer = Utils.send_message_to_server(message)
+
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'Group does not exist':

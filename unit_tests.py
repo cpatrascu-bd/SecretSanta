@@ -55,6 +55,13 @@ def unit_test_requests():
     print(client.answer_request('cristi2', 'poli', Answer.DENY))
     print(client.get_requests('poli'))
 
+def unit_test_remove_user():
+    print(1)
+    print(client.remove_user('cristi', 'poli'))
+
+def unit_test_delete_group():
+    print(client.delete_group('poli'))
+
 unit_test_create_user()
 unit_test_login()
 unit_test_create_group()
@@ -64,3 +71,5 @@ unit_test_get_groups()
 unit_test_get_group()
 unit_test_templates()
 unit_test_requests()
+unit_test_remove_user()
+unit_test_delete_group()
