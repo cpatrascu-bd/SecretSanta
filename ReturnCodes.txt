@@ -1,0 +1,93 @@
+create_group(group_name, group_password):
+	NOT_AUTH -> trebuie logare
+	CONNECTION_ERROR -> retry
+	SUCCES
+	RELOGIN -> trebuie relogare
+	USED_GROUP_NAME 
+	UNKNOWN_ERROR
+
+create_template(template_name, template_text):
+	NOT_AUTH
+	CONNECTION_ERROR
+	SUCCES
+	USED_TEMPLATE_NAME
+	UNKNOWN_ERROR
+
+join_group_with_pass(group_name, group_pass):
+	NOT_AUTH
+	SUCCES
+	RELOGIN
+	INVALID_GROUP -> nu exista grupul cu numele dat
+	INVALID_PASSWORD -> parola gresita
+	ALREADY_ENROLLER -> user deja in grup
+	UNKNOWN_ERROR
+
+request_join_group(group_name):
+	NOT_AUTH
+	SUCCES
+	RELOGIN
+	INVALID_GROUP -> nu exista grup cu acel nume
+	REQUEST_ALREADY_EXISTS -> deja a dat cerere de join
+
+get_groups():
+	NOT_AUTH, []
+	SUCCES, lista_grupuri
+	RELOGIN, []
+	UNKOWN_ERROR, []
+
+get_group(group_name):
+	NOT_AUTH, []
+	SUCCES, lista_useri_grup
+	RELOGIN, []
+	UNKOWN_ERROR, []
+
+get_templates():
+	NOT_AUTH, []
+	SUCCES, lista_template-uri
+	RELOGIN, []
+	UNKOWN_ERROR, []
+
+get_template(template_name):
+	NOT_AUTH, []
+	SUCCES, text_template
+	RELOGIN, []
+	UNKOWN_ERROR, []
+
+remove_user(username, group_name): adminul scoate pe cineva din grup
+	NOT_AUTH
+	SUCCES
+	INVALID_USER -> userul nu e in grup
+	NOT_ADMIN -> nu esti adminul grupului
+	YOU_ADMIN -> nu poti sa iesi din grup fiind admin
+	UNKNOWN_ERROR
+
+exit_group(group_name): userul logat iese din grupul group_name
+	la fel ca la remove_user
+
+delete_group(group_name):
+	NOT_AUTH
+	SUCCES
+	INVALID_GROUP -> nu exista grup cu acel nume
+	NOT_ADMIN -> doar adminul poate sterge grupul
+	UNKNOWN_ERROR
+
+logout():
+	NOT_AUTH
+	SUCCES
+	UNKNOWN_ERROR	
+	
+
+TOATE AU NOT_AUTH, SUCCES, CONNECTION_ERROR, UNKOWN_ERROR. Nu le mai scriu pe astea
+	
+get_requests(group_name): requesturile pentru un grup
+	INVALID_GROUP -> nu exista grupul  group_name
+	NOT_ADMIN -> trb sa fii admin sa vezi requesturile grupului
+	
+answer_request(username, group_name, ans_type): -> raspunzi la un request de forma ( username vrea in grupul group
+													ans_type poate fi Answer.ACCEPT sau Answer.DENY
+													
+if_admin(group_name) -> Verifica daca userul logat e adminul grupului group_name
+	True
+	False
+	 
+	
