@@ -193,11 +193,12 @@ class Client():
             return ReturnCodes.NOT_AUTH
         message = 'REQUEST UNJOIN ' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
+        print(answer)
         if answer[2:] == 'Token not valid. Please re-authenticate':
             return ReturnCodes.RELOGIN
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
-        if answer[2:] == 'User not in group':
+        if answer[2:] == 'Username not in group':
             return ReturnCodes.INVALID_USER
         if answer[2:] == 'Group does not exist':
             return ReturnCodes.INVALID_GROUP
