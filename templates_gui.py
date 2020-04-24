@@ -1,6 +1,8 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from alerts import *
+from utils import ReturnCodes
 import auth
 
 TEMPLATE_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230);" \
@@ -14,12 +16,13 @@ TEMPLATE_DIALOG_SS = 'border-image: url("form-background.jpg"); background-repea
 
 
 class CreateTemplateGUI(QDialog):
-    def __init__(self, client=None, parent=None):
+    def __init__(self, parent=None, client=None):
         super(CreateTemplateGUI, self).__init__(parent)
+        self.setModal(True)
 
         self.parent = parent
         self.client = client
-        self.template_max_length = 28
+        self.template_max_length = 500
 
         self.edit_template_name = QLineEdit()
         self.edit_template_name.setStyleSheet(TEMPLATE_CREATE_LINEEDIT_SS)
@@ -31,13 +34,13 @@ class CreateTemplateGUI(QDialog):
         label_template_name.setBuddy(self.edit_template_name)
 
         self.edit_text = QTextEdit()
-        self.setStyleSheet(TEMPLATE_TEXT_EDIT_SS)
+        self.edit_text.setStyleSheet(TEMPLATE_TEXT_EDIT_SS)
 
-        ok_button = Auth.TransparentButton(text="Create", font_size=10, parent=self)
+        ok_button = auth.TransparentButton(text="Create", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.create_template)
 
-        cancel_button = Auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 
@@ -55,23 +58,52 @@ class CreateTemplateGUI(QDialog):
     def limit_text(self):
         text = self.edit_text.toPlainText()
         t_len = len(text)
+        if t_len == 0:
+            alert(WARNING, WARNING, TEMPLATE_TEXT_NULL, parent=self)
+            self.edit_text.setFocus()
+            return False
         if t_len > self.template_max_length:
-            Auth.alert(Auth.WARNING,"Maximum size violation", "Yout template is too large, "
+            alert(WARNING,"Maximum size violation", "Yout template is too large, "
                       +str(t_len)+" characters, keep a maximum of " + str(self.template_max_length) +
-                          " characters")
+                          " characters", parent=self)
             return False
         return True
 
     def create_template(self):
-        if not self.limit_text():
-            pass
+        if self.edit_template_name.text() == "":
+            alert(WARNING, WARNING, TEMPLATE_NAME_NULL, parent=self)
+            self.edit_template_name.setFocus()
+            return
+        if self.limit_text():
+            ret = self.client.create_template(self.edit_template_name.text(), self.edit_text.toPlainText())
+            if ret == ReturnCodes.NOT_AUTH:
+                alert(ERROR, ERROR, NOT_AUTH, parent=self)
+                self.close()
+                self.parent.return_to_login()
+                return
+            if ret == ReturnCodes.RELOGIN:
+                alert(ERROR, ERROR, RELOGIN_ERR, parent=self)
+                self.close()
+                self.parent.return_to_login()
+                return
+            if ret == ReturnCodes.CONNECTION_ERROR:
+                alert(WARNING, WARNING, CONNECTION_ERROR, parent=self)
+            if ret == ReturnCodes.USED_TEMPLATE_NAME:
+                alert(WARNING, WARNING, USED_NAME, parent=self)
+            if ret == ReturnCodes.UNKNOWN_ERROR:
+                alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            if ret == ReturnCodes.SUCCESS:
+                alert(SUCCESS, SUCCESS, TEMPLATE_CREATE_SUCCESS, parent=self.parent)
+                self.close()
 
     def cancel(self):
         self.close()
 
+
 class ViewTemplates(QDialog):
-    def __init__(self, client=None, parent=None):
+    def __init__(self, templates, client=None, parent=None):
         super(ViewTemplates, self).__init__(parent)
+        self.setModal(True)
 
         self.parent = parent
         self.client = client
@@ -82,27 +114,26 @@ class ViewTemplates(QDialog):
         self.list_templates.setStyleSheet(TEMPLATE_LIST_VIEW_SS)
         self.list_templates.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        ok_button = Auth.TransparentButton(text="View", font_size=10, parent=self)
+        ok_button = auth.TransparentButton(text="View", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.view_template)
 
-        cancel_button = Auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 
         layout = QGridLayout()
 
         layout.addWidget(self.list_templates, 0, 0, 4, 1)
-        layout.addWidget(ok_button,0,1)
-        layout.addWidget(cancel_button,1,1)
+        layout.addWidget(ok_button, 0, 1)
+        layout.addWidget(cancel_button, 1, 1)
 
         self.model = QStringListModel()
-        self.model.setStringList(["hehe","hihi","huhu"])
+        self.model.setStringList(templates)
         self.list_templates.setModel(self.model)
         self.setLayout(layout)
         self.resize(self.width, self.height)
         self.setWindowTitle("View Templates")
-
 
     def cancel(self):
         self.close()
@@ -110,9 +141,25 @@ class ViewTemplates(QDialog):
     def view_template(self):
         idx = self.list_templates.selectedIndexes()[0]
         data = self.model.itemData(idx)[0]
-        print(data)
+        ret, template = self.client.get_template(data)
+
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self)
+            self.close()
+            self.parent.return_to_login()
+            return
+
+        if ret == ReturnCodes.RELOGIN:
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self)
+            self.close()
+            self.parent.return_to_login()
+
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+
         tb = QTextBrowser()
-        tb.setText("fasdffdsfasdfdsfadsfdsfsdfds")
+        tb.setText(template)
 
         qd = QDialog(parent=self)
         qd.setStyleSheet(TEMPLATE_DIALOG_SS)
@@ -123,5 +170,4 @@ class ViewTemplates(QDialog):
         qd.resize(int(3*self.width/4), int(3*self.height/4))
         qd.setWindowTitle("Template "+data)
         qd.show()
-
         pass

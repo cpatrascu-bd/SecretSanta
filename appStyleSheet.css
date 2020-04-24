@@ -33,3 +33,16 @@ ViewTemplates {
     background-repeat: no-repeat;
     background-position: center;
 }
+
+ViewGroups {
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+Joiner {
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
