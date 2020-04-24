@@ -8,12 +8,12 @@ import templates_gui
 
 
 class Dashboard(QDialog):
-    def __init__(self, width=480, height=540, parent=None, client=None):
-        super(Dashboard, self).__init__(parent)
+    def __init__(self, width=480, height=540, papa=None, client=None):
+        super(Dashboard, self).__init__()
         self.width = width
         self.height = height
 
-        self.parent = parent
+        self.papa = papa
         self.client = client
 
         self.create_group_button = auth.TransparentButton("Create Group")
@@ -49,7 +49,7 @@ class Dashboard(QDialog):
         self.create_template_button.clicked.connect(self.create_template)
         self.view_templates_button.clicked.connect(self.view_templates)
         self.view_groups_button.clicked.connect(self.view_groups)
-        self.exit_button.clicked.connect(self.exit)
+        self.exit_button.clicked.connect(self.return_to_login)
 
     def create_group(self):
         cg = groups_gui.CreateGroupGUI(parent=self, santa_client=self.client)
@@ -74,31 +74,24 @@ class Dashboard(QDialog):
     def view_groups(self):
         ret, groups = self.client.get_groups()
 
-        print(ret)
-        print(groups)
-
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
 
         if ret == ReturnCodes.NOT_AUTH:
-            alert(ERROR, ERROR, NOT_AUTH, parent=self)
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.papa)
             self.return_to_login()
             return
 
         if ret == ReturnCodes.RELOGIN:
-            alert(ERROR, ERROR, RELOGIN_ERR, parent=self)
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.papa)
             self.return_to_login()
             return
 
         vg = groups_gui.ViewGroups(groups, parent=self, client=self.client)
         vg.show()
 
-    def exit(self):
-        self.parent.show()
-        self.close()
-
     def return_to_login(self):
         self.client.logout()
-        self.parent.show()
+        self.papa.show()
         self.close()

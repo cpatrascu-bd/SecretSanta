@@ -9,10 +9,10 @@ TEMPLATE_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(23
                              "background: none;"
 TEMPLATE_CREATE_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba(0,0,0,100);"
 TEMPLATE_TEXT_EDIT_SS = "color:white; border: none; background: rgba(0,0,0,100);"
-TEMPLATE_LIST_VIEW_SS = "color:white; border: none; background: rgba(0,0,0,100);"
+TEMPLATE_LIST_VIEW_SS = "color:white; border: none; font-size: 18px; background: rgba(0,0,0,100); "
 TEMPLATE_TEXT_BROWSER_SS = "border-image: none; border: none; color: white; background: rgba(0,0,0,50);";
 TEMPLATE_DIALOG_SS = 'border-image: url("form-background.jpg"); background-repeat: no-repeat;' \
-                                                                ' background-position: center;'
+                     ' background-position: center;'
 
 
 class CreateTemplateGUI(QDialog):
@@ -53,6 +53,8 @@ class CreateTemplateGUI(QDialog):
 
         self.setLayout(layout)
         self.resize(int(3 * parent.width / 4), int(3 * parent.height / 4))
+        self.width = 3 * parent.width / 4
+        self.height = 3 * parent.height / 4
         self.setWindowTitle("Create Template")
 
     def limit_text(self):
@@ -63,9 +65,9 @@ class CreateTemplateGUI(QDialog):
             self.edit_text.setFocus()
             return False
         if t_len > self.template_max_length:
-            alert(WARNING,"Maximum size violation", "Yout template is too large, "
-                      +str(t_len)+" characters, keep a maximum of " + str(self.template_max_length) +
-                          " characters", parent=self)
+            alert(WARNING, "Maximum size violation", "Your template is too large, "
+                  + str(t_len) + " characters, keep a maximum of " + str(self.template_max_length) +
+                  " characters", parent=self)
             return False
         return True
 
@@ -167,7 +169,7 @@ class ViewTemplates(QDialog):
         layout = QVBoxLayout()
         layout.addWidget(tb)
         qd.setLayout(layout)
-        qd.resize(int(3*self.width/4), int(3*self.height/4))
-        qd.setWindowTitle("Template "+data)
+        qd.resize(int(3 * self.width / 4), int(3 * self.height / 4))
+        qd.setWindowTitle("Template " + data)
         qd.show()
         pass

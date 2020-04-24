@@ -46,3 +46,8 @@ Joiner {
     background-position: center;
 }
 
+ViewGroup {
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}

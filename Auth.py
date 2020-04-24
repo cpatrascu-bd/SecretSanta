@@ -186,11 +186,11 @@ class AuthForm(QDialog):
         )
 
         if ret == ReturnCodes.SUCCESS:
-            dash = dashboard.Dashboard(width=self.parent.width, height=self.parent.height, parent=self.parent,
+            dash = dashboard.Dashboard(width=self.parent.width, height=self.parent.height, papa=self.parent,
                                        client=self.client)
             self.close()
-            dash.show()
             self.parent.hide()
+            dash.exec_()
 
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, WARNING, MI_SCUZI, parent=self)
@@ -205,11 +205,11 @@ class AuthForm(QDialog):
             self.edit_password.clear()
 
     def cancel(self):
-        dash = dashboard.Dashboard(width=self.parent.width, height=self.parent.height, parent=self.parent,
+        dash = dashboard.Dashboard(width=self.parent.width, height=self.parent.height, papa=self.parent,
                                    client=self.client)
         self.close()
-        dash.show()
         self.parent.hide()
+        dash.exec_()
 
 
 class Authentication(QDialog):
@@ -223,9 +223,9 @@ class Authentication(QDialog):
         self.exit_button = TransparentButton("Exit")
         self.width = width
         self.height = height
-        self.setButtonSizes(self.sign_up_button)
-        self.setButtonSizes(self.log_in_button)
-        self.setButtonSizes(self.exit_button)
+        self.set_button_sizes(self.sign_up_button)
+        self.set_button_sizes(self.log_in_button)
+        self.set_button_sizes(self.exit_button)
         """
         self.help_messages= {self.sign_up_button.text(): "Create a new account for " \
                                                          "accessing the facilites of this application",
@@ -259,7 +259,7 @@ class Authentication(QDialog):
         dialog = AuthForm('L', santa_client=self.client, parent=self)
         dialog.show()
 
-    def setButtonSizes(self, button):
+    def set_button_sizes(self, button):
         button.setMinimumHeight(int(self.height / 12))
         button.setMinimumWidth(int(self.width / 10))
 

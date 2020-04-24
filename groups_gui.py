@@ -5,9 +5,10 @@ from alerts import *
 from client import *
 import auth
 
+GROUP_NAME_SS = "font-weight: bold; font-size: 30px; color: DarkRed"
 GROUP_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230); background: rgba(0,0,0,100);"
 GROUP_CREATE_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba(0,0,0,50);"
-GROUP_LIST_VIEW_SS = "color:white; border: none; background: rgba(0,0,0,100);"
+GROUP_LIST_VIEW_SS = "color:white; border: none; font-size: 18px; background: rgba(0,0,0,100);"
 JOINER_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba(0,0,0,50);"
 JOINER_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230); background: rgba(0,0,0,100);"
 
@@ -24,6 +25,7 @@ class Joiner(QDialog):
         self.edit_password = QLineEdit()
         self.edit_password.setStyleSheet(JOINER_LINEEDIT_SS)
         self.edit_password.setMinimumWidth(int(parent.width / 5))
+        self.edit_password.setEchoMode(QLineEdit.Password)
 
         label_password = QLabel()
         label_password.setStyleSheet(JOINER_LABEL_STYLE_SHEET)
@@ -45,14 +47,45 @@ class Joiner(QDialog):
         layout.addWidget(join_button, 1, 1)
 
         self.setLayout(layout)
-        self.resize(int(3 * parent.width / 8), int(3 * parent.height / 8))
+        self.width = 3 * parent.width / 8
+        self.height = 3 * parent.height / 8
+        self.resize(self.width, self.height)
         self.edit_password.setFocus()
 
     def join_password(self):
-        pass
+        ret = self.client.join_group_with_pass(self.group, self.edit_password.text())
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+        if ret == ReturnCodes.RELOGIN:
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
+        if ret == ReturnCodes.INVALID_GROUP:
+            alert(ERROR, ERROR, JOIN_INVALID_GROUP, parent=self.parent)
+        if ret == ReturnCodes.INVALID_PASSWORD:
+            alert(ERROR, ERROR, INVALID_PASSWORD, parent=self)
+            return
+        if ret == ReturnCodes.ALREADY_ENROLLED:
+            alert(WARNING, WARNING, ALREADY_ENROLLED, parent=self.parent)
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+        if ret == ReturnCodes.SUCCESS:
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_JOIN+self.group, parent=self.parent)
+        self.parent.refresh_users_list()
+        self.close()
 
     def join(self):
-        pass
+        ret = self.client.request_join_group(self.group)
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+        if ret == ReturnCodes.RELOGIN:
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
+        if ret == ReturnCodes.INVALID_GROUP:
+            alert(ERROR, ERROR, JOIN_INVALID_GROUP, parent=self.parent)
+        if ret == ReturnCodes.REQUEST_ALREADY_EXISTS:
+            alert(WARNING, WARNING, REQUEST_EXISTS, parent=self.parent)
+        if ret == ReturnCodes.SUCCESS:
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_JOIN_REQUEST, parent=self.parent)
+        self.close()
 
 
 class CreateGroupGUI(QDialog):
@@ -110,6 +143,8 @@ class CreateGroupGUI(QDialog):
         layout.addWidget(cancel_button, 3, 1, alignment=Qt.AlignLeft)
         self.setLayout(layout)
         self.resize(int(3 * parent.width / 4), int(3 * parent.height / 4))
+        self.width = 3 * parent.width / 4
+        self.height = 3 * parent.height / 4
         self.setWindowTitle("Create Group")
         self.edit_groupname.setFocus()
 
@@ -123,16 +158,16 @@ class CreateGroupGUI(QDialog):
         if self.edit_password2.text() != self.edit_password.text():
             alert(WARNING, WARNING, PASSWORD_MISSMATCH, parent=self)
             return
-        ret = self.client.create_group(self.edit_groupname.text(),self.edit_password.text())
+        ret = self.client.create_group(self.edit_groupname.text(), self.edit_password.text())
 
         if ret == ReturnCodes.NOT_AUTH:
-            alert(ERROR, ERROR, NOT_AUTH, parent=self)
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent.parent)
             self.close()
             self.parent.return_to_login()
             return
 
         if ret == ReturnCodes.RELOGIN:
-            alert(ERROR, ERROR, RELOGIN_ERR, parent=self)
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent.parent)
             self.close()
             self.parent.return_to_login()
             return
@@ -152,6 +187,193 @@ class CreateGroupGUI(QDialog):
         pass
 
     def cancel(self):
+        self.close()
+
+
+class ViewGroup(QDialog):
+    def __init__(self, group_name, group_members, santa_client=None, parent=None):
+        super(ViewGroup, self).__init__(parent)
+        self.setModal(True)
+
+        self.parent = parent
+        self.client = santa_client
+        self.width = parent.width
+        self.height = parent.height
+        self.group_name = group_name
+        self.admin_view = self.client.if_admin(group_name)
+
+        self.list_members = QListView()
+        self.list_members.setStyleSheet(GROUP_LIST_VIEW_SS)
+        self.list_members.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.list_members.setMaximumWidth(int(2 * parent.width / 3))
+
+        self.model = QStringListModel()
+        self.model.setStringList(group_members)
+        self.list_members.setModel(self.model)
+
+        group_name_label = QLabel(text=group_name)
+        group_name_label.setStyleSheet(GROUP_NAME_SS)
+
+        close_button = auth.TransparentButton(text="Close view", font_size=10, parent=self)
+        close_button.setMaximumWidth(int(parent.width / 10))
+        close_button.setMinimumHeight(int(parent.height / 15))
+        close_button.clicked.connect(self.exit)
+
+        layout = QGridLayout()
+        layout.addWidget(group_name_label, 0, 0, 1, 2, alignment=Qt.AlignCenter)
+        layout.addWidget(self.list_members, 1, 0, 8, 1)
+
+        if self.admin_view:
+            remove_user_button = auth.TransparentButton(text="Remove User", font_size=10, parent=self)
+            remove_user_button.setMaximumWidth(int(parent.width / 10))
+            remove_user_button.setMinimumHeight(int(parent.height / 15))
+            remove_user_button.clicked.connect(self.remove_user)
+
+            delete_group_button = auth.TransparentButton(text="Delete Group", font_size=10, parent=self)
+            delete_group_button.setMaximumWidth(int(parent.width / 10))
+            delete_group_button.setMinimumHeight(int(parent.height / 15))
+            delete_group_button.clicked.connect(self.delete_group)
+
+            send_emails_button = auth.TransparentButton(text="Send Emails", font_size=10, parent=self)
+            send_emails_button.setMaximumWidth(int(parent.width / 10))
+            send_emails_button.setMinimumHeight(int(parent.height / 15))
+            send_emails_button.clicked.connect(self.send_emails)
+
+            join_requests_button = auth.TransparentButton(text="Join Requests", font_size=10, parent=self)
+            join_requests_button.setMaximumWidth(int(parent.width / 10))
+            join_requests_button.setMinimumHeight(int(parent.height / 15))
+            join_requests_button.clicked.connect(self.see_requests)
+
+            layout.addWidget(join_requests_button, 2, 1)
+            layout.addWidget(remove_user_button, 3, 1)
+            layout.addWidget(delete_group_button, 4, 1)
+            layout.addWidget(send_emails_button, 5, 1)
+        else:
+            join_group_button = auth.TransparentButton(text="Join group", font_size=10, parent=self)
+            join_group_button.setMaximumWidth(int(parent.width / 5))
+            join_group_button.setMinimumHeight(int(parent.height / 15))
+            join_group_button.clicked.connect(self.join_group)
+
+            leave_group_button = auth.TransparentButton(text="Leave group", font_size=10, parent=self)
+            leave_group_button.setMaximumWidth(int(parent.width / 5))
+            leave_group_button.setMinimumHeight(int(parent.height / 15))
+            leave_group_button.clicked.connect(self.leave_group)
+
+            layout.addWidget(join_group_button, 4, 1)
+            layout.addWidget(leave_group_button, 5, 1)
+
+        layout.addWidget(close_button, 6, 1)
+
+        self.setLayout(layout)
+        self.setWindowTitle("Group "+group_name)
+        self.resize(self.width, self.height)
+
+    def join_group(self):
+        joiner = Joiner(self.group_name, santa_client=self.client, parent=self)
+        joiner.show()
+
+    def refresh_users_list(self):
+        ret, group = self.client.get_group(self.group_name)
+
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+            self.close()
+            return
+
+        if ret == ReturnCodes.RELOGIN:
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
+            self.close()
+
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+
+        if ret == ReturnCodes.SUCCESS:
+            self.model.setStringList(group)
+
+    def remove_user(self):
+        idx = self.list_members.selectedIndexes()[0]
+        username = self.model.itemData(idx)[0]
+        ret = self.client.remove_user(username, self.group_name)
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+            self.close()
+            return
+
+        if ret == ReturnCodes.INVALID_USER:
+            alert(ERROR, ERROR, INVALID_DELETE_USER, parent=self)
+            return
+
+        if ret == ReturnCodes.NOT_ADMIN:
+            alert(WARNING, WARNING, NOT_ADMIN, parent=self)
+            return
+
+        if ret == ReturnCodes.YOU_ADMIN:
+            alert(WARNING, WARNING, YOU_ADMIN, parent=self)
+            return
+
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+
+        if ret == ReturnCodes.SUCCESS:
+            alert(SUCCESS, SUCCESS, REMOVE_USER_SUCCESS, parent=self)
+            self.refresh_users_list()
+
+    def delete_group(self):
+        ret = self.client.delete_group(self.group_name)
+
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+            self.close()
+            return
+
+        if ret == ReturnCodes.INVALID_GROUP:
+            alert(ERROR, ERROR, INVALID_DELETE_GROUP, parent=self)
+            return
+
+        if ret == ReturnCodes.NOT_ADMIN:
+            alert(ERROR, ERROR, NOT_ADMIN, parent=self)
+            return
+
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+
+        if ret == ReturnCodes.SUCCESS:
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_DELETE_GROUP, parent=self.parent)
+            self.parent.refresh_groups_list()
+            self.close()
+
+    def send_emails(self):
+        ret = self.client.send_emails(self.group_name)
+        if ret == ReturnCodes.SUCCESS:
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_SEND_EMAILS,  parent=self)
+
+    def see_requests(self):
+        pass
+
+    def leave_group(self):
+        ret = self.client.exit_group(self.group_name)
+
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+            self.close()
+            return
+
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self.parent)
+            self.close()
+            return
+
+        if ret == ReturnCodes.YOU_ADMIN:
+            alert(ERROR, ERROR, YOU_ADMIN, parent=self)
+
+        if ret == ReturnCodes.SUCCESS:
+            alert(SUCCESS, SUCCESS, REMOVE_USER_SUCCESS, parent=self)
+            self.refersh_users_list()
+
+    def exit(self):
         self.close()
 
 
@@ -198,19 +420,35 @@ class ViewGroups(QDialog):
         self.resize(self.width, self.height)
         self.setWindowTitle("View Groups")
 
+    def refresh_groups_list(self):
+        ret, groups = self.client.get_groups()
+
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent.parent)
+            self.close()
+            self.parent.return_to_login()
+            return
+
+        if ret == ReturnCodes.RELOGIN:
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent.parent)
+            self.close()
+            self.parent.return_to_login()
+            return
+
+        self.model.setStringList(groups)
+
     def select_group(self):
         self.view_group()
 
     def join_group(self):
-        print("join")
         idx = self.list_groups.selectedIndexes()[0]
         group_name = self.model.itemData(idx)[0]
-        print(group_name)
         joiner = Joiner(group_name, santa_client=self.client, parent=self)
         joiner.show()
-
-        # self.setDisabled()
-        pass
 
     def cancel(self):
         self.close()
@@ -221,13 +459,13 @@ class ViewGroups(QDialog):
         ret, group = self.client.get_group(group_name)
 
         if ret == ReturnCodes.NOT_AUTH:
-            alert(ERROR, ERROR, NOT_AUTH, parent=self)
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
             self.close()
             self.parent.return_to_login()
             return
 
         if ret == ReturnCodes.RELOGIN:
-            alert(ERROR, ERROR, RELOGIN_ERR, parent=self)
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
             self.close()
             self.parent.return_to_login()
 
@@ -235,7 +473,5 @@ class ViewGroups(QDialog):
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
 
-        tb = QTextBrowser()
-        tb.setText(group_name)
-
-        pass
+        vg = ViewGroup(group_name, group, santa_client=self.client, parent=self)
+        vg.show()
