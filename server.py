@@ -250,6 +250,29 @@ def request_join(username, group, token):
     return SUCCESS, 'Request submitted'
 
 
+def request_unjoin(username, group, token):
+    # Check user privileges and if data is valid and then remove group from group
+    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
+        return FAIL, 'Group does not exist'
+
+    if token not in tokens.values():
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    user = [user for user, tok in tokens.items() if tok == token][0]
+    if user != get_group_admin(group):
+        return FAIL, 'User does not have enough privileges'
+
+    if username == get_group_admin(group):
+        return FAIL, 'Admin can not leave the group'
+
+    filename = GROUPS + group + '.json'
+    if username not in get_file_content(filename)[1:]:
+        return FAIL, 'Username not in group'
+
+    remove_from_file(filename, username)
+    return SUCCESS, 'Username successfully removed from group'
+
+
 def request_accept(username, group, token):
     # Check user privileges and if data is valid and then remove the request from file while adding user to group
     if token not in tokens.values():
@@ -294,25 +317,6 @@ def request_deny(username, group, token):
         return SUCCESS, 'Request denied'
 
     return FAIL, 'User not admin of the group'
-
-
-def request_unjoin(username, group, token):
-    # Check user privileges and if data is valid and then remove group from group
-    if username not in tokens.keys() or tokens[username] != token:
-        return FAIL, 'Token not valid. Please re-authenticate'
-
-    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
-        return FAIL, 'Group does not exist'
-
-    if username == get_group_admin(group):
-        return FAIL, 'Admin can not leave the group'
-
-    filename = GROUPS + group + '.json'
-    if username not in get_file_content(filename):
-        return FAIL, 'Username not in group'
-
-    remove_from_file(filename, username)
-    return SUCCESS, 'Username successfully removed from group'
 
 
 def parse_command(data):
