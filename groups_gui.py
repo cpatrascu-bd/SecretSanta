@@ -1,9 +1,9 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from Alerts import *
+from alerts import *
 from client import *
-import Auth
+import auth
 
 GROUP_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230); background: rgba(0,0,0,100);"
 GROUP_CREATE_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba(0,0,0,50);"
@@ -30,11 +30,11 @@ class Joiner(QDialog):
         label_password.setText("Password: ")
         label_password.setBuddy(self.edit_password)
 
-        join_pwd_button = Auth.TransparentButton(text="Join with password", font_size=10, parent=self)
+        join_pwd_button = auth.TransparentButton(text="Join with password", font_size=10, parent=self)
         join_pwd_button.setMaximumWidth(int(parent.width/5))
         join_pwd_button.clicked.connect(self.join_password)
 
-        join_button = Auth.TransparentButton(text="Join Request", font_size=10, parent=self)
+        join_button = auth.TransparentButton(text="Join Request", font_size=10, parent=self)
         join_button.setMaximumWidth(int(parent.width / 5))
         join_button.clicked.connect(self.join)
 
@@ -91,11 +91,11 @@ class CreateGroupGUI(QDialog):
         label_password2.setText("Reenter password: ")
         label_password2.setBuddy(self.edit_password2)
 
-        ok_button = Auth.TransparentButton(text="Create", font_size=10, parent=self)
+        ok_button = auth.TransparentButton(text="Create", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.create_group)
 
-        cancel_button = Auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
        
@@ -171,15 +171,15 @@ class ViewGroups(QDialog):
 
         self.list_groups.doubleClicked.connect(self.select_group)
 
-        ok_button = Auth.TransparentButton(text="View", font_size=10, parent=self)
+        ok_button = auth.TransparentButton(text="View", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.view_group)
 
-        join_button = Auth.TransparentButton(text="Join", font_size=10, parent=self)
+        join_button = auth.TransparentButton(text="Join", font_size=10, parent=self)
         join_button.setMaximumWidth(int(parent.width / 10))
         join_button.clicked.connect(self.join_group)
 
-        cancel_button = Auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 

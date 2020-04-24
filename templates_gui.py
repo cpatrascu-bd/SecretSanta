@@ -1,9 +1,9 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from Alerts import *
+from alerts import *
 from utils import ReturnCodes
-import Auth
+import auth
 
 TEMPLATE_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230);" \
                              "background: none;"
@@ -36,11 +36,11 @@ class CreateTemplateGUI(QDialog):
         self.edit_text = QTextEdit()
         self.edit_text.setStyleSheet(TEMPLATE_TEXT_EDIT_SS)
 
-        ok_button = Auth.TransparentButton(text="Create", font_size=10, parent=self)
+        ok_button = auth.TransparentButton(text="Create", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.create_template)
 
-        cancel_button = Auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 
@@ -114,11 +114,11 @@ class ViewTemplates(QDialog):
         self.list_templates.setStyleSheet(TEMPLATE_LIST_VIEW_SS)
         self.list_templates.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        ok_button = Auth.TransparentButton(text="View", font_size=10, parent=self)
+        ok_button = auth.TransparentButton(text="View", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.view_template)
 
-        cancel_button = Auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 

@@ -1,10 +1,10 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from client import *
-from Alerts import *
-import Auth
-import Groups_GUI
-import Templates_GUI
+from alerts import *
+import auth
+import groups_gui
+import templates_gui
 
 
 class Dashboard(QDialog):
@@ -16,11 +16,11 @@ class Dashboard(QDialog):
         self.parent = parent
         self.client = client
 
-        self.create_group_button = Auth.TransparentButton("Create Group")
-        self.view_groups_button = Auth.TransparentButton("View Groups")
-        self.create_template_button = Auth.TransparentButton("Create Template")
-        self.view_templates_button = Auth.TransparentButton("View Templates")
-        self.exit_button = Auth.TransparentButton("Logout")
+        self.create_group_button = auth.TransparentButton("Create Group")
+        self.view_groups_button = auth.TransparentButton("View Groups")
+        self.create_template_button = auth.TransparentButton("Create Template")
+        self.view_templates_button = auth.TransparentButton("View Templates")
+        self.exit_button = auth.TransparentButton("Logout")
         self.set_buttons()
 
         layout = QGridLayout()
@@ -52,11 +52,11 @@ class Dashboard(QDialog):
         self.exit_button.clicked.connect(self.exit)
 
     def create_group(self):
-        cg = Groups_GUI.CreateGroupGUI(parent=self, santa_client=self.client)
+        cg = groups_gui.CreateGroupGUI(parent=self, santa_client=self.client)
         cg.show()
 
     def create_template(self):
-        ct = Templates_GUI.CreateTemplateGUI(parent=self, client=self.client)
+        ct = templates_gui.CreateTemplateGUI(parent=self, client=self.client)
         ct.show()
 
     def view_templates(self):
@@ -68,7 +68,7 @@ class Dashboard(QDialog):
             alert(ERROR, ERROR, NOT_AUTH, parent=self)
             self.return_to_login()
             return
-        vt = Templates_GUI.ViewTemplates(templates, parent=self, client=self.client)
+        vt = templates_gui.ViewTemplates(templates, parent=self, client=self.client)
         vt.show()
 
     def view_groups(self):
@@ -91,7 +91,7 @@ class Dashboard(QDialog):
             self.return_to_login()
             return
 
-        vg = Groups_GUI.ViewGroups(groups, parent=self, client=self.client)
+        vg = groups_gui.ViewGroups(groups, parent=self, client=self.client)
         vg.show()
 
     def exit(self):

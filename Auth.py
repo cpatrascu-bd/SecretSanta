@@ -2,8 +2,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from client import *
-from Alerts import *
-import Dashboard
+from alerts import *
+import dashboard
 
 LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(230,230,230);"
 AUTH_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba(0,0,0,50);"
@@ -186,7 +186,7 @@ class AuthForm(QDialog):
         )
 
         if ret == ReturnCodes.SUCCESS:
-            dash = Dashboard.Dashboard(width=self.parent.width, height=self.parent.height, parent=self.parent,
+            dash = dashboard.Dashboard(width=self.parent.width, height=self.parent.height, parent=self.parent,
                                        client=self.client)
             self.close()
             dash.show()
@@ -205,7 +205,7 @@ class AuthForm(QDialog):
             self.edit_password.clear()
 
     def cancel(self):
-        dash = Dashboard.Dashboard(width=self.parent.width, height=self.parent.height, parent=self.parent,
+        dash = dashboard.Dashboard(width=self.parent.width, height=self.parent.height, parent=self.parent,
                                    client=self.client)
         self.close()
         dash.show()
