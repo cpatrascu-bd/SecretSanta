@@ -236,7 +236,7 @@ class Client():
         message = 'REQUEST '
 
     def if_admin(self, group_name):
-        if self.get_group(group_name)[0] == self.username:
+        if self.get_group(group_name)[0][0] == self.username:
             return True
         return False
 
