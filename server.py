@@ -259,7 +259,7 @@ def request_unjoin(username, group, token):
         return FAIL, 'Token not valid. Please re-authenticate'
 
     user = [user for user, tok in tokens.items() if tok == token][0]
-    if user != get_group_admin(group):
+    if user != get_group_admin(group) and user != username:
         return FAIL, 'User does not have enough privileges'
 
     if username == get_group_admin(group):
