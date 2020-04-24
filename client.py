@@ -88,7 +88,7 @@ class Client():
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'Token not valid. Please re-authenticate':
-            self.logout
+            self.logout()
             return ReturnCodes.RELOGIN
         if answer[2:] == 'Group does not exist':
             return ReturnCodes.INVALID_GROUP
@@ -122,7 +122,6 @@ class Client():
         message = 'FETCH REQUESTS ' + self.token + ' ' + group_name
         answer = Utils.send_message_to_server(message)
 
-
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
 
@@ -133,7 +132,6 @@ class Client():
             return ReturnCodes.INVALID_GROUP
         if answer[2:] == 'You are not admin of the group':
             return ReturnCodes.NOT_ADMIN
-
 
     def answer_request(self, username, group_name, ans_type):
         if self.token == '':
@@ -236,6 +234,11 @@ class Client():
         if self.token == '':
             return ReturnCodes.NOT_AUTH
         message = 'REQUEST '
+
+    def if_admin(self, group_name):
+        if self.get_group(group_name)[0] == group_name:
+            return True
+        return False
 
 
 

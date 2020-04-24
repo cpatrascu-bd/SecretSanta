@@ -52,7 +52,7 @@ def unit_test_requests():
     print(client.request_join_group('poli'))
     print(client.get_requests('poli'))
     print(client.answer_request('cristi','poli', Answer.ACCEPT))
-    print(client.answer_request('cristi3', 'poli', Answer.DENY))
+    print(client.answer_request('cristi2', 'poli', Answer.DENY))
     print(client.get_requests('poli'))
 
 unit_test_create_user()
