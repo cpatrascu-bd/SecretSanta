@@ -40,7 +40,7 @@ class CreateTemplateGUI(QDialog):
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.create_template)
 
-        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 
@@ -120,7 +120,7 @@ class ViewTemplates(QDialog):
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.view_template)
 
-        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 
