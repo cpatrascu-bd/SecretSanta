@@ -213,7 +213,7 @@ class Client():
             return ReturnCodes.NOT_AUTH
         message = 'DELETE GROUP ' + ' '.join([group_name, self.token])
         answer = Utils.send_message_to_server(message)
-
+        print(answer)
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'Group does not exist':

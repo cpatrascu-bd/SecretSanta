@@ -58,6 +58,8 @@ def unit_test_requests():
 def unit_test_remove_user():
     print(1)
     print(client.remove_user('cristi', 'poli'))
+    print(client.login('cristi', 'cristi'))
+    print(client.exit_group('poli'))
 
 def unit_test_delete_group():
     print(client.delete_group('poli'))
