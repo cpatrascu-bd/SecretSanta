@@ -85,6 +85,11 @@ get_requests(group_name): requesturile pentru un grup
 	
 answer_request(username, group_name, ans_type): -> raspunzi la un request de forma ( username vrea in grupul group
 													ans_type poate fi Answer.ACCEPT sau Answer.DENY
+		INVALID_GROUP -> nu exista grupul
+		INVALID_REQUEST -> nu exista requestul
+		ALREADY_ENROLLED -> deja in grup
+		NOT_ADMIN -> nu esti admin
+
 													
 if_admin(group_name) -> Verifica daca userul logat e adminul grupului group_name
 	True
