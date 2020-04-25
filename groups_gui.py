@@ -128,7 +128,7 @@ class CreateGroupGUI(QDialog):
         ok_button.setMaximumWidth(int(parent.width / 10))
         ok_button.clicked.connect(self.create_group)
 
-        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
        
@@ -214,14 +214,14 @@ class ViewGroup(QDialog):
         group_name_label = QLabel(text=group_name)
         group_name_label.setStyleSheet(GROUP_NAME_SS)
 
-        close_button = auth.TransparentButton(text="Close view", font_size=10, parent=self)
+        close_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         close_button.setMaximumWidth(int(parent.width / 10))
         close_button.setMinimumHeight(int(parent.height / 15))
         close_button.clicked.connect(self.exit)
 
         layout = QGridLayout()
         layout.addWidget(group_name_label, 0, 0, 1, 2, alignment=Qt.AlignCenter)
-        layout.addWidget(self.list_members, 1, 0, 8, 1)
+        layout.addWidget(self.list_members, 1, 0, 10, 1)
 
         if self.admin_view:
             remove_user_button = auth.TransparentButton(text="Remove User", font_size=10, parent=self)
@@ -262,7 +262,7 @@ class ViewGroup(QDialog):
             layout.addWidget(join_group_button, 4, 1)
             layout.addWidget(leave_group_button, 5, 1)
 
-        layout.addWidget(close_button, 6, 1)
+        layout.addWidget(close_button, 8, 1)
 
         self.setLayout(layout)
         self.setWindowTitle("Group "+group_name)
@@ -401,7 +401,7 @@ class ViewGroups(QDialog):
         join_button.setMaximumWidth(int(parent.width / 10))
         join_button.clicked.connect(self.join_group)
 
-        cancel_button = auth.TransparentButton(text="Cancel", font_size=10, parent=self)
+        cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
 
@@ -409,8 +409,8 @@ class ViewGroups(QDialog):
 
         layout.addWidget(self.list_groups, 0, 0, 4, 1)
         layout.addWidget(ok_button, 0, 1)
-        layout.addWidget(cancel_button, 1, 1)
-        layout.addWidget(join_button, 2, 1)
+        layout.addWidget(join_button, 1, 1)
+        layout.addWidget(cancel_button, 2, 1)
 
         self.model = QStringListModel()
         self.model.setStringList(groups)
@@ -454,6 +454,8 @@ class ViewGroups(QDialog):
         self.close()
 
     def view_group(self):
+        if not self.list_groups.selectedIndexes():
+            return
         idx = self.list_groups.selectedIndexes()[0]
         group_name = self.model.itemData(idx)[0]
         ret, group = self.client.get_group(group_name)

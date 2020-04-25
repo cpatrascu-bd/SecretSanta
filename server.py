@@ -241,7 +241,10 @@ def request_join(username, group, token):
     if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
         return FAIL, 'Group does not exist'
 
-    # Check for duplicate request
+    filename = GROUPS + group + '.json'
+    if os.path.isfile(filename) and username in get_file_content(filename)[1:]:
+        return FAIL, 'Username already enrolled in group'
+
     data = {'username': username, 'group': group}
     if os.path.isfile(REQUESTS) and data in get_file_content(REQUESTS):
         return FAIL, 'Request already exists'
