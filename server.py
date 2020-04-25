@@ -10,15 +10,15 @@ from _thread import *
 # Global values
 SUCCESS = 1
 FAIL = 0
-DELIMITER = b'\x0a'
+DELIMITER = b'\x0a'.decode('utf-8')
 
 # File specific declarations
-CREDENTIALS = './users.json'
+CREDENTIALS = 'users/users.json'
 EMAIL_SCRIPT = './script.py'
 GROUPS = './groups/'
 TEMPLATES = './templates/'
-REQUESTS = './requests.json'
-LOG = './logs.txt'
+REQUESTS = 'requests/requests.json'
+LOG = 'logs/logs.txt'
 
 # Socket specific declarations
 MAX_BUFFER = 4096
@@ -83,6 +83,10 @@ def generate_token(username, userhash):
     return m.hexdigest()
 
 
+def get_token_user(token):
+    return [user for user, tok in tokens.items() if tok == token][0]
+
+
 def create_account(username, password_hash, email):
     # Create a new account entry if username has not already been taken
     data = {'username': username, 'password': password_hash, 'email': email}
@@ -116,9 +120,7 @@ def logout(token):
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    user = [user for user, tok in tokens.items() if token == tok][0]
-    del tokens[user]
-
+    del tokens[get_token_user(token)]
     return SUCCESS, 'User successfully logged out'
 
 
@@ -131,9 +133,8 @@ def create_group(name, password_hash, token):
     if os.path.isfile(filename):
         return FAIL, 'Group name already exists'
 
-    user = [user for user, tok in tokens.items() if tok == token][0]
     insert_into_file(filename, password_hash)
-    insert_into_file(filename, user)
+    insert_into_file(filename, get_token_user(token))
 
     return SUCCESS, 'Group {} created'.format(name.split('.')[0])
 
@@ -225,8 +226,7 @@ def get_requests(group, token):
     if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
         return FAIL, 'Group does not exist'
 
-    user = [user for user, tok in tokens.items() if tok == token][0]
-    if user != get_group_admin(group):
+    if get_token_user(token) != get_group_admin(group):
         return FAIL, 'User not group\'s admin'
 
     requests = [request for request in get_file_content(REQUESTS) if request['group'] == group]
@@ -262,8 +262,7 @@ def request_unjoin(username, group, token):
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    user = [user for user, tok in tokens.items() if tok == token][0]
-    if user != get_group_admin(group) and user != username:
+    if get_token_user(token) != get_group_admin(group) and get_token_user(token) != username:
         return FAIL, 'User does not have enough privileges'
 
     if username == get_group_admin(group):
@@ -294,8 +293,7 @@ def request_accept(username, group, token):
         return FAIL, 'Username already enrolled'
 
     # Check if the user accepting is the group's admin
-    user = [user for user, tok in tokens.items() if token == tok]
-    if user and get_group_admin(group) == user[0]:
+    if get_group_admin(group) == get_token_user(token):
         remove_from_file(REQUESTS, data)
         insert_into_file(GROUPS + group + '.json', username)
         return SUCCESS, 'Request accepted'
@@ -315,12 +313,28 @@ def request_deny(username, group, token):
     if os.path.isfile(REQUESTS) and data not in get_file_content(REQUESTS):
         return FAIL, 'Request does not exists'
 
-    user = [user for user, tok in tokens.items() if token == tok]
-    if user and get_group_admin(group) == user[0]:
+    if get_group_admin(group) == get_token_user(token):
         remove_from_file(REQUESTS, data)
         return SUCCESS, 'Request denied'
 
     return FAIL, 'User not admin of the group'
+
+
+def send_emails(group, data, flag, token):
+    # Check user privileges and if data is valid and then call the script to send emails
+    if token not in tokens.values():
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    if get_group_admin(group) != get_token_user(token):
+        return FAIL, 'User does not have enough privileges'
+
+    if flag:
+        template_file = 'temp.json'
+        insert_into_file(template_file, data)
+    else:
+        template_file = TEMPLATES + data + '.json'
+
+    os.system('python3 send_email.py {} {} {}'.format(group, GROUPS + group + '.json', template_file))
 
 
 def parse_command(data):
@@ -369,6 +383,10 @@ def parse_command(data):
 
         if items[0] == 'LOGOUT':
             return logout(items[1])
+
+        if items[0] == 'SEND':
+            if items[1] == 'EMAILS':
+                return send_emails(items[2], items[3], items[4], items[4])
 
         return FAIL, 'Command does not exist'
     except IndexError:
