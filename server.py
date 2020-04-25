@@ -10,7 +10,7 @@ from _thread import *
 # Global values
 SUCCESS = 1
 FAIL = 0
-DELIMITER = b'\x0a'
+DELIMITER = b'\x0a'.decode('utf-8')
 
 # File specific declarations
 CREDENTIALS = './users.json'
