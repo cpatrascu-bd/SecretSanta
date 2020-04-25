@@ -117,13 +117,15 @@ class CreateGroupGUI(QDialog):
 
 
 class Joiner(QDialog):
-    def __init__(self, group, santa_client=None, parent=None):
+
+    def __init__(self, group, outer_join=False, santa_client=None, parent=None):
         super(Joiner, self).__init__(parent)
         self.setModal(True)
 
         self.group = group
         self.client = santa_client
         self.parent = parent
+        self.outer_join = outer_join
 
         self.edit_password = QLineEdit()
         self.edit_password.setStyleSheet(JOINER_LINEEDIT_SS)
@@ -173,22 +175,24 @@ class Joiner(QDialog):
             return
         if ret == ReturnCodes.SUCCESS:
             alert(SUCCESS, SUCCESS, SUCCESSFUL_JOIN+self.group, parent=self.parent)
-        self.parent.refresh_users_list()
+        if not self.outer_join:
+            self.parent.refresh_users_list()
         self.close()
 
     def join(self):
         ret = self.client.request_join_group(self.group)
         if ret == ReturnCodes.NOT_AUTH:
-            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent.parent)
         if ret == ReturnCodes.RELOGIN:
-            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent.parent)
         if ret == ReturnCodes.INVALID_GROUP:
-            alert(ERROR, ERROR, JOIN_INVALID_GROUP, parent=self.parent)
+            alert(ERROR, ERROR, JOIN_INVALID_GROUP, parent=self.parent.parent)
         if ret == ReturnCodes.REQUEST_ALREADY_EXISTS:
-            alert(WARNING, WARNING, REQUEST_EXISTS, parent=self.parent)
+            alert(WARNING, WARNING, REQUEST_EXISTS, parent=self.parent.parent)
         if ret == ReturnCodes.SUCCESS:
-            alert(SUCCESS, SUCCESS, SUCCESSFUL_JOIN_REQUEST, parent=self.parent)
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_JOIN_REQUEST, parent=self.parent.parent)
         self.close()
+        self.parent.close()
 
 
 class ViewRequests(QDialog):
@@ -253,6 +257,7 @@ class ViewRequests(QDialog):
             return
         alert(SUCCESS, SUCCESS, "request accepted", parent=self)
         self.refresh_list()
+        self.parent.refresh_users_list()
 
     def reject_request(self):
         if not self.list_requests.selectedIndexes():
@@ -273,11 +278,11 @@ class ViewRequests(QDialog):
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
-        alert(SUCCESS, SUCCESS, "request accepted", parent=self)
+        alert(SUCCESS, SUCCESS, "request reejected", parent=self)
         self.refresh_list()
 
     def refresh_list(self):
-        ret, requests = self.client.get_requests(self.group_name)
+        ret, requests = self.client.get_requests(self.group)
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
@@ -584,7 +589,7 @@ class ViewGroups(QDialog):
             return
         idx = self.list_groups.selectedIndexes()[0]
         group_name = self.model.itemData(idx)[0]
-        joiner = Joiner(group_name, santa_client=self.client, parent=self)
+        joiner = Joiner(group_name, outer_join=True, santa_client=self.client, parent=self)
         joiner.show()
 
     def cancel(self):

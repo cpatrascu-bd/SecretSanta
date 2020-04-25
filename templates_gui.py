@@ -11,7 +11,7 @@ TEMPLATE_CREATE_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba
 TEMPLATE_TEXT_EDIT_SS = "color:white; border: none; background: rgba(0,0,0,100);"
 TEMPLATE_LIST_VIEW_SS = "color:white; border: none; font-size: 18px; background: rgba(0,0,0,100); "
 TEMPLATE_TEXT_BROWSER_SS = "border-image: none; font-size: 14px; border: none; " \
-                           "color: white; background: rgba(0,0,0,50);";
+                           "color: white; background: rgba(0,0,0,50);"
 TEMPLATE_DIALOG_SS = 'border-image: url("form-background.jpg"); background-repeat: no-repeat;' \
                      ' background-position: center;'
 
@@ -144,8 +144,6 @@ class EditTemplate(QDialog):
 
     def send_emails(self):
         changed = self.text_box.toPlainText() != self.selected_template
-        ret = ReturnCodes.SUCCESS
-        """
         if changed:
             ret = self.client.send_emails(self.group, text_template=self.selected_template, flag=True)
         else:
@@ -153,7 +151,6 @@ class EditTemplate(QDialog):
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
-        """
         if ret == ReturnCodes.SUCCESS:
             alert(SUCCESS, SUCCESS, SUCCESSFUL_SEND_EMAILS, parent=self.parent.parent)
             self.close()
@@ -186,8 +183,10 @@ class ViewTemplates(QDialog):
 
         if self.type == SELECT_TEMPLATE:
             ok_button.clicked.connect(self.edit_template)
+            self.list_templates.doubleClicked.connect(self.edit_template)
         else:
             ok_button.clicked.connect(self.view_template)
+            self.list_templates.doubleClicked.connect(self.view_template)
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
