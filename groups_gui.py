@@ -509,8 +509,9 @@ class ViewGroup(QDialog):
             alert(ERROR, ERROR, YOU_ADMIN, parent=self)
 
         if ret == ReturnCodes.SUCCESS:
-            alert(SUCCESS, SUCCESS, REMOVE_USER_SUCCESS, parent=self)
-            self.refersh_users_list()
+            alert(SUCCESS, SUCCESS, LEAVE_GROUP_SUCCESS, parent=self.parent)
+            self.close()
+            self.refresh_users_list()
 
     def exit(self):
         self.close()
