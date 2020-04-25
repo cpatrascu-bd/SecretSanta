@@ -21,7 +21,7 @@ class Client:
             return ReturnCodes.INVALID_EMAIL
 
         sha_password = Utils.encrypt_string(password)
-        message = "CREATE ACCOUNT " + name + " " + sha_password + " " + email
+        message = DELIMITER.join(['CREATE','ACCOUNT', name, sha_password, email])
         answer = Utils.send_message_to_server(message)
 
         if answer == 'communication_error':
@@ -38,7 +38,7 @@ class Client:
 
     def login(self, name, password):
         sha_password = Utils.encrypt_string(password)
-        message = "AUTH " + name + " " + sha_password
+        message = DELIMITER.join(['AUTH', name, sha_password])
         answer = Utils.send_message_to_server(message)
         if answer == 'connection_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -57,7 +57,7 @@ class Client:
         password_hash = Utils.encrypt_string(password)
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'CREATE GROUP ' + name + ' ' + password_hash + ' ' + self.token
+        message = DELIMITER.join(['CREATE', 'GROUP' , name, password_hash, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -74,7 +74,7 @@ class Client:
     def create_template(self, name, text):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'CREATE TEMPLATE ' + name + ' ' + text + ' ' + self.token
+        message = DELIMITER.join(['CREATE','TEMPLATE', name, text, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -88,7 +88,7 @@ class Client:
         if self.token == '':
             return ReturnCodes.NOT_AUTH
         password_hash = Utils.encrypt_string(group_pass)
-        message = 'REQUEST JOINP ' + ' '.join([self.username, group_name, password_hash, self.token])
+        message = DELIMITER.join(['REQUEST', 'JOINP', self.username, group_name, password_hash, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -108,7 +108,7 @@ class Client:
     def request_join_group(self, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REQUEST JOIN ' + ' '.join([self.username, group_name, self.token])
+        message = DELIMITER.join(['REQUEST', 'JOIN', self.username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -126,7 +126,7 @@ class Client:
     def get_requests(self, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH, []
-        message = 'FETCH REQUESTS ' + group_name + ' ' + self.token
+        message = DELIMITER.join(['FETCH', 'REQUESTS', group_name, self.token])
         answer = Utils.send_message_to_server(message)
 
         if answer == 'communication_error':
@@ -143,7 +143,7 @@ class Client:
     def answer_request(self, username, group_name, ans_type):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REQUEST ' + ans_type + ' ' + ' '.join([username, group_name, self.token])
+        message = 'REQUEST' + DELIMITER + ans_type + DELIMITER + DELIMITER.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -155,7 +155,7 @@ class Client:
     def get_groups(self):
         if self.token == '':
             return ReturnCodes.NOT_AUTH, []
-        message = 'FETCH GROUPS ' + self.token
+        message = 'FETCH' + DELIMITER + 'GROUPS' + DELIMITER + self.token
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -167,7 +167,7 @@ class Client:
     def get_group(self, name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH, []
-        message = 'FETCH GROUP ' + name + ' ' + self.token
+        message = DELIMITER.join(['FETCH', 'GROUP', name ,self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -188,7 +188,7 @@ class Client:
     def get_templates(self):
         if self.token == '':
             return ReturnCodes.NOT_AUTH, []
-        message = 'FETCH TEMPLATES ' + self.token
+        message = 'FETCH' + DELIMITER + 'TEMPLATES' + DELIMITER + self.token
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
             return Utils.get_error_check(answer)
@@ -198,7 +198,7 @@ class Client:
     def get_template(self, name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH, []
-        message = 'FETCH TEMPLATE ' + name + ' ' + self.token
+        message = DELIMITER.join(['FETCH', 'TEMPLATE', name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR, []
@@ -212,7 +212,7 @@ class Client:
     def remove_user(self, username, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REQUEST UNJOIN ' + ' '.join([username, group_name, self.token])
+        message = DELIMITER.join(['REQUEST', 'UNJOIN', username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -233,7 +233,7 @@ class Client:
     def delete_group(self, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'DELETE GROUP ' + ' '.join([group_name, self.token])
+        message = DELIMITER.join(['DELETE', 'GROUP', group_name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -249,7 +249,7 @@ class Client:
     def logout(self):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'LOGOUT ' + self.token
+        message = 'LOGOUT' + DELIMITER + self.token
         answer = Utils.send_message_to_server(message)
         self.token = ''
         self.username = ''
@@ -258,11 +258,13 @@ class Client:
             return ReturnCodes.SUCCESS
         return ReturnCodes.UNKNOWN_ERROR
 
-    def send_emails(self, group_name, template, flag):
+    def send_emails(self, group_name, template_name="", text_template="", flag=False):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-
-        message = 'SEND EMAILS ' + ' '.join([group_name, template, flag, self.token])
+        if flag:
+            message = DELIMITER.join(['SEND', 'EMAILS', group_name, text_template, flag, self.token])
+        else:
+            message = DELIMITER.join(['SEND', 'EMAILS', group_name, template_name, flag, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
