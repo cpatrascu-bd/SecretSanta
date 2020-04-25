@@ -51,3 +51,9 @@ ViewGroup {
     background-repeat: no-repeat;
     background-position: center;
 }
+
+ViewRequests {
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}

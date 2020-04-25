@@ -23,12 +23,16 @@ class Dashboard(QDialog):
         self.exit_button = auth.TransparentButton("Logout")
         self.set_buttons()
 
+        unsername_label = QLabel("User: " + self.client.username)
+        unsername_label.setStyleSheet("color:white; font-size:18px")
+
         layout = QGridLayout()
         layout.addWidget(self.create_group_button, 0, 0)
         layout.addWidget(self.create_template_button, 0, 1)
         layout.addWidget(self.view_groups_button, 1, 0)
         layout.addWidget(self.view_templates_button, 1, 1)
         layout.addWidget(self.exit_button, 2, 1, alignment=Qt.AlignRight)
+        layout.addWidget(unsername_label, 2, 0)
         self.setLayout(layout)
         self.resize(width, height)
         self.setWindowTitle("Dashboard")
@@ -68,7 +72,7 @@ class Dashboard(QDialog):
             alert(ERROR, ERROR, NOT_AUTH, parent=self)
             self.return_to_login()
             return
-        vt = templates_gui.ViewTemplates(templates, parent=self, client=self.client)
+        vt = templates_gui.ViewTemplates(templates_gui.JUST_VIEW, templates, parent=self, client=self.client)
         vt.show()
 
     def view_groups(self):
