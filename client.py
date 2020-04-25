@@ -119,7 +119,7 @@ class Client():
     def get_requests(self, group_name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH, []
-        message = 'FETCH REQUESTS ' + self.token + ' ' + group_name
+        message = 'FETCH REQUESTS ' + group_name + ' ' + self.token
         answer = Utils.send_message_to_server(message)
 
         if answer == 'communication_error':
