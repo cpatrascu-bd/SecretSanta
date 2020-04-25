@@ -57,3 +57,9 @@ ViewRequests {
     background-repeat: no-repeat;
     background-position: center;
 }
+
+EditTemplate {
+    border-image: url("form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}

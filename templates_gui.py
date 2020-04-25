@@ -122,8 +122,6 @@ class EditTemplate(QDialog):
         self.text_box.setFocus()
         self.text_box.setStyleSheet(TEMPLATE_TEXT_BROWSER_SS)
 
-        self.setStyleSheet(TEMPLATE_DIALOG_SS)
-
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(self.parent.width / 10))
         cancel_button.clicked.connect(self.close)
@@ -145,9 +143,10 @@ class EditTemplate(QDialog):
     def send_emails(self):
         changed = self.text_box.toPlainText() != self.selected_template
         if changed:
-            ret = self.client.send_emails(self.group, text_template=self.selected_template, flag=True)
+            ret = self.client.send_emails(self.group, text_template=self.text_box.toPlainText(), flag=True)
         else:
             ret = self.client.send_emails(self.group, template_name=self.selected_template_name, flag=False)
+        ret = ReturnCodes.UNKNOWN_ERROR
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
