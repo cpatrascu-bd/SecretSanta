@@ -10,6 +10,7 @@ from _thread import *
 # Global values
 SUCCESS = 1
 FAIL = 0
+DELIMITER = b'\x0a'
 
 # File specific declarations
 CREDENTIALS = './users.json'
@@ -324,7 +325,7 @@ def request_deny(username, group, token):
 
 def parse_command(data):
     # Split a command received from socket into multiples tokens by " "
-    items = data.split(" ")
+    items = data.split(DELIMITER)
 
     try:
         if items[0] == 'CREATE':
@@ -333,7 +334,7 @@ def parse_command(data):
             if items[1] == 'GROUP':
                 return create_group(items[2], items[3], items[4])
             if items[1] == 'TEMPLATE':
-                return create_template(items[2], items[3], " ".join([word for word in items[4:]]))
+                return create_template(items[2], items[3], ' '.join([word for word in items[4:]]))
 
         if items[0] == 'FETCH':
             if items[1] == 'GROUPS':

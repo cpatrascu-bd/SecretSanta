@@ -1,6 +1,8 @@
 from utils import *
 import ast
-class Client():
+
+
+class Client:
     def __init__(self):
         self.token = ""
         self.username = ''
@@ -8,7 +10,8 @@ class Client():
         self.current_group_admin = False
         self.in_last_group = False
 
-    def create_user(self, name, password, email):
+    @staticmethod
+    def create_user(name, password, email):
 
         if len(name) < 3:
             return ReturnCodes.WRONG_FORMAT_USERNAME
@@ -51,10 +54,10 @@ class Client():
         return ReturnCodes.UNKNOWN_ERROR
 
     def create_group(self, name, password):
-        passwordHash = Utils.encrypt_string(password)
+        password_hash = Utils.encrypt_string(password)
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'CREATE GROUP ' + name + ' ' + passwordHash + ' ' + self.token
+        message = 'CREATE GROUP ' + name + ' ' + password_hash + ' ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -71,7 +74,7 @@ class Client():
     def create_template(self, name, text):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'CREATE TEMPLATE ' + name + ' ' + self.token + ' ' + text
+        message = 'CREATE TEMPLATE ' + name + ' ' + text + ' ' + self.token
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -203,9 +206,6 @@ class Client():
             return Utils.get_error_check(answer)
         return ReturnCodes.SUCCESS, answer[2:]
 
-    def send_emails(self, group):
-        pass
-
     def exit_group(self, group_name):
         return self.remove_user(self.username, group_name)
 
@@ -258,7 +258,7 @@ class Client():
             return ReturnCodes.SUCCESS
         return ReturnCodes.UNKNOWN_ERROR
 
-    def send_emails(self, group_name, template,flag):
+    def send_emails(self, group_name, template, flag):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
 
@@ -270,7 +270,7 @@ class Client():
             return ReturnCodes.SUCCESS
         return ReturnCodes.UNKNOWN_ERROR
 
-    def if_admin(self,group_name):
+    def if_admin(self):
         return self.current_group_admin
 
     def in_current_group(self):
@@ -282,23 +282,3 @@ class Client():
             if self.username in users:
                 return True
         return False
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

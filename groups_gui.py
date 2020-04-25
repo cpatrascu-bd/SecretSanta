@@ -312,7 +312,7 @@ class ViewGroup(QDialog):
         self.width = parent.width
         self.height = parent.height
         self.group_name = group_name
-        self.admin_view = self.client.if_admin(group_name)
+        self.admin_view = self.client.if_admin()
 
         self.list_members = QListView()
         self.list_members.setStyleSheet(GROUP_LIST_VIEW_SS)
