@@ -21,7 +21,7 @@ class Client:
             return ReturnCodes.INVALID_EMAIL
 
         sha_password = Utils.encrypt_string(password)
-        message = DELIMITER.join(['CREATE','ACCOUNT', name, sha_password, email])
+        message = DELIMITER.join(['CREATE', 'ACCOUNT', name, sha_password, email])
         answer = Utils.send_message_to_server(message)
 
         if answer == 'communication_error':
@@ -57,7 +57,7 @@ class Client:
         password_hash = Utils.encrypt_string(password)
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = DELIMITER.join(['CREATE', 'GROUP' , name, password_hash, self.token])
+        message = DELIMITER.join(['CREATE', 'GROUP', name, password_hash, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -74,7 +74,7 @@ class Client:
     def create_template(self, name, text):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = DELIMITER.join(['CREATE','TEMPLATE', name, text, self.token])
+        message = DELIMITER.join(['CREATE', 'TEMPLATE', name, text, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -167,7 +167,7 @@ class Client:
     def get_group(self, name):
         if self.token == '':
             return ReturnCodes.NOT_AUTH, []
-        message = DELIMITER.join(['FETCH', 'GROUP', name ,self.token])
+        message = DELIMITER.join(['FETCH', 'GROUP', name, self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
@@ -244,6 +244,7 @@ class Client:
             return ReturnCodes.INVALID_GROUP
         if answer[2:] == 'User not admin of the group':
             return ReturnCodes.NOT_ADMIN
+
         return ReturnCodes.UNKNOWN_ERROR
 
     def logout(self):
