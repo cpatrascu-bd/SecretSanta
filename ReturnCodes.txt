@@ -91,8 +91,16 @@ answer_request(username, group_name, ans_type): -> raspunzi la un request de for
 		NOT_ADMIN -> nu esti admin
 
 													
-if_admin(group_name) -> Verifica daca userul logat e adminul grupului group_name
+if_admin() -> Verifica daca userul logat e adminul grupului curent ( ultimul pe care s-a dat get_group)
 	True
 	False
-	 
+
+in_current_group() -> verifica daca userul logat e in grupul curent ( ultimul pe care s-a dat get_group)
+    True
+    False
+
+
+check_if_in_group(group_name): -> verifica daca userul e in group_name -> face request la server
+    True
+    False
 	

@@ -5,6 +5,8 @@ class Client():
         self.token = ""
         self.username = ''
         self.requests = []
+        self.current_group_admin = False
+        self.in_last_group = False
 
     def create_user(self, name, password, email):
 
@@ -85,6 +87,8 @@ class Client():
         password_hash = Utils.encrypt_string(group_pass)
         message = 'REQUEST JOINP ' + ' '.join([self.username, group_name, password_hash, self.token])
         answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'Token not valid. Please re-authenticate':
@@ -138,6 +142,8 @@ class Client():
             return ReturnCodes.NOT_AUTH
         message = 'REQUEST ' + ans_type + ' ' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
         return_code = Utils.request_answer_check(answer)
         if return_code == ReturnCodes.RELOGIN:
             self.logout()
@@ -148,6 +154,8 @@ class Client():
             return ReturnCodes.NOT_AUTH, []
         message = 'FETCH GROUPS ' + self.token
         answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '0':
             return Utils.get_error_check(answer)
         groups = answer[3:-1].replace("'", '').split(", ")
@@ -158,9 +166,20 @@ class Client():
             return ReturnCodes.NOT_AUTH, []
         message = 'FETCH GROUP ' + name + ' ' + self.token
         answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '0':
             return Utils.get_error_check(answer)
         group_users = answer[3:-1].replace("'", '').split(", ")
+        if self.username == group_users[0]:
+            self.current_group_admin = True
+        else:
+            self.current_group_admin = False
+
+        if self.username in group_users:
+            self.in_current_group = True
+        else:
+            self.in_current_group = False
         return ReturnCodes.SUCCESS, group_users
 
     def get_templates(self):
@@ -178,6 +197,8 @@ class Client():
             return ReturnCodes.NOT_AUTH, []
         message = 'FETCH TEMPLATE ' + name + ' ' + self.token
         answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR, []
         if answer[0] == '0':
             return Utils.get_error_check(answer)
         return ReturnCodes.SUCCESS, answer[2:]
@@ -193,7 +214,8 @@ class Client():
             return ReturnCodes.NOT_AUTH
         message = 'REQUEST UNJOIN ' + ' '.join([username, group_name, self.token])
         answer = Utils.send_message_to_server(message)
-        print(answer)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
         if answer[2:] == 'Token not valid. Please re-authenticate':
             return ReturnCodes.RELOGIN
         if answer[0] == '1':
@@ -213,7 +235,9 @@ class Client():
             return ReturnCodes.NOT_AUTH
         message = 'DELETE GROUP ' + ' '.join([group_name, self.token])
         answer = Utils.send_message_to_server(message)
-        print(answer)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
+
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
         if answer[2:] == 'Group does not exist':
@@ -234,14 +258,29 @@ class Client():
             return ReturnCodes.SUCCESS
         return ReturnCodes.UNKNOWN_ERROR
 
-    def send_emails(self, group_name):
+    def send_emails(self, group_name, template,flag):
         if self.token == '':
             return ReturnCodes.NOT_AUTH
-        message = 'REQUEST '
 
-    def if_admin(self, group_name):
-        if self.get_group(group_name)[1][0] == self.username:
-            return True
+        message = 'SEND EMAILS ' + ' '.join([group_name, template, flag, self.token])
+        answer = Utils.send_message_to_server(message)
+        if answer == 'communication_error':
+            return ReturnCodes.CONNECTION_ERROR
+        if answer[0] == '1':
+            return ReturnCodes.SUCCESS
+        return ReturnCodes.UNKNOWN_ERROR
+
+    def if_admin(self,group_name):
+        return self.current_group_admin
+
+    def in_current_group(self):
+        return self.in_last_group
+
+    def check_if_in_group(self, group_name):
+        code, users = self.get_group(group_name)
+        if code == ReturnCodes.SUCCESS:
+            if self.username in users:
+                return True
         return False
 
 
