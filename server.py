@@ -4,7 +4,7 @@ import socket
 import json
 import os
 import hashlib
-import send_emails as mailer
+import email_script as mailer
 from datetime import datetime
 from _thread import *
 
@@ -175,6 +175,10 @@ def get_group_admin(name):
     return get_file_content(GROUPS + name + '.json')[1]
 
 
+def get_admin_email(name):
+    return [item['email'] for item in get_file_content(CREDENTIALS) if item['username'] == name][0]
+
+
 def get_groups(token):
     # List the groups folder in order to get all templates names
     if token not in tokens.values():
@@ -341,11 +345,10 @@ def send_emails(group, data, flag, token):
     else:
         template_file = TEMPLATES + data + '.json'
 
-    ret = mailer.run(group, GROUPS + group + '.json', template_file)
-    if ret == 'FAIL':
-        return FAIL, 'Error while sending emails'
+    mailer.run(group, GROUPS + group + '.json', template_file, get_admin_email(get_group_admin(group)))
 
-    return SUCCESS, 'Mails have been sent'
+    if flag == 'True':
+        os.remove('temp.json')
 
 
 def parse_command(data):
@@ -397,7 +400,8 @@ def parse_command(data):
 
         if items[0] == 'SEND':
             if items[1] == 'EMAILS':
-                return send_emails(items[2], items[3], items[4], items[5])
+                send_emails(items[2], items[3], items[4], items[5])
+                return SUCCESS, 'Request submitted successfully'
 
         return FAIL, 'Command does not exist'
     except IndexError:

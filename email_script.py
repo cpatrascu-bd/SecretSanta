@@ -4,14 +4,18 @@ import smtplib
 import random
 import json
 
+SUCCESS = 1
+FAIL = 0
 
 students = []
 sequence = []
 
 email = 'SantaClaus334CB@gmail.com'
 password = 'butelie123'
-subject = 'Secret Santa'
+subject = 'Secret Santa Results'
+error_subject = 'Error while sending emails for Secret Santa'
 phrase = '\n\nYour Secret Santa person is: '
+ante_body = 'Group: '
 body = ''
 
 
@@ -22,17 +26,15 @@ def get_file_content(file):
     return content
 
 
-def init(group_name, student_file, template_file):
+def init(student_file, template_file):
     global students
     global body
     global sequence
-    global subject
 
     data = get_file_content(student_file)
     users = get_file_content('users/users.json')
 
     students = [(item['username'], item['email']) for item in users if item['username'] in data]
-    subject = group_name + subject
     body = get_file_content(template_file)[0]
     sequence = [i for i in range(len(students))]
 
@@ -48,32 +50,41 @@ def randomize():
                 break
 
 
-def send_email(target_email, picked_name):
+def send_email(target_email, sub, text):
     try:
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.login(email, password)
     except smtplib.SMTPException:
-        return 'FAIL'
+        return FAIL, 'Error while connecting to Gmail server'
 
-    message = '\r\n'.join(['To: %s' % target_email, 'From: %s' % email, 'Subject: %s' % subject,
-                           '', str(body) + str(phrase) + picked_name + '.'])
+    message = '\r\n'.join(['To: {}'.format(target_email),
+                           'From: {}'.format(email),
+                           'Subject: {}'.format(sub),
+                           '', text])
 
     try:
         server.sendmail(email, target_email, message)
     except smtplib.SMTPException:
         server.quit()
-        return 'FAIL'
+        return FAIL, 'Error while sending email to {}'.format(target_email)
 
     server.quit()
-    return 'SUCCESS'
+    return SUCCESS, 'Email sent to user'
 
 
-def run(group_name, student_file, template_file):
-    init(group_name, student_file, template_file)
+def run(group_name, student_file, template_file, admin_email):
+    init(student_file, template_file)
     randomize()
 
-    for name, mail in students:
-        if send_email(mail, name) == 'FAIL':
-            return 'FAIL'
+    err_body = ''
+    cnt = 0
+    for i in range(len(students)):
+        name, mail = students[i]
+        code, err = send_email(mail, subject, ''.join([ante_body, group_name, '\n\n', body,
+                               phrase, students[sequence[i]][0], '.']))
+        if code == FAIL:
+            err_body += '\n\n Error {}:\n.{}'.format(str(cnt), err)
+            cnt += 1
 
-    return 'SUCCESS'
+    if err_body:
+        send_email(admin_email, error_subject,  err_body)

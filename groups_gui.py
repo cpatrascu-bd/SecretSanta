@@ -255,7 +255,7 @@ class ViewRequests(QDialog):
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
-        alert(SUCCESS, SUCCESS, "request accepted", parent=self)
+        alert(SUCCESS, SUCCESS, "Request accepted", parent=self)
         self.refresh_list()
         self.parent.refresh_users_list()
 
@@ -278,7 +278,7 @@ class ViewRequests(QDialog):
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
-        alert(SUCCESS, SUCCESS, "request reejected", parent=self)
+        alert(SUCCESS, SUCCESS, "Request reejected", parent=self)
         self.refresh_list()
 
     def refresh_list(self):
