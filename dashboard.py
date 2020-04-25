@@ -68,7 +68,7 @@ class Dashboard(QDialog):
             alert(ERROR, ERROR, NOT_AUTH, parent=self)
             self.return_to_login()
             return
-        vt = templates_gui.ViewTemplates(templates, parent=self, client=self.client)
+        vt = templates_gui.ViewTemplates( templates_gui.JUST_VIEW, templates, parent=self, client=self.client)
         vt.show()
 
     def view_groups(self):

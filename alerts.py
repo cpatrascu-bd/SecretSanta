@@ -34,6 +34,7 @@ INVALID_DELETE_GROUP = "The group you are trying to remove does not exist!"
 SUCCESSFUL_DELETE_GROUP = "Group deleted successfully!"
 SUCCESSFUL_SEND_EMAILS = "You have successfully sent the emails!"
 EMAILS_ALREADY_SENT = "You have already sent the emails"
+NO_INDEX_SELECTED = "Please select an element from the list"
 
 
 def alert(type, title, text, parent=None):

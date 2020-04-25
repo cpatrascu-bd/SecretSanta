@@ -10,9 +10,13 @@ TEMPLATE_LABEL_STYLE_SHEET = " font-weight: bold; font-size: 14px; color: rgb(23
 TEMPLATE_CREATE_LINEEDIT_SS = "color: white; font-weight: bold; background: rgba(0,0,0,100);"
 TEMPLATE_TEXT_EDIT_SS = "color:white; border: none; background: rgba(0,0,0,100);"
 TEMPLATE_LIST_VIEW_SS = "color:white; border: none; font-size: 18px; background: rgba(0,0,0,100); "
-TEMPLATE_TEXT_BROWSER_SS = "border-image: none; border: none; color: white; background: rgba(0,0,0,50);";
+TEMPLATE_TEXT_BROWSER_SS = "border-image: none; font-size: 14px; border: none; " \
+                           "color: white; background: rgba(0,0,0,50);";
 TEMPLATE_DIALOG_SS = 'border-image: url("form-background.jpg"); background-repeat: no-repeat;' \
                      ' background-position: center;'
+
+JUST_VIEW = 'V'
+SELECT_TEMPLATE = 'S'
 
 
 class CreateTemplateGUI(QDialog):
@@ -102,8 +106,62 @@ class CreateTemplateGUI(QDialog):
         self.close()
 
 
+class EditTemplate(QDialog):
+    def __init__(self, template_name, template, client=None, parent=None, group=None):
+        super(EditTemplate, self).__init__(parent)
+        self.setModal(True)
+
+        self.selected_template = template
+        self.selected_template_name = template_name
+        self.group = group
+        self.parent = parent
+        self.client = client
+
+        self.text_box = QTextEdit()
+        self.text_box.setText(template)
+        self.text_box.setFocus()
+        self.text_box.setStyleSheet(TEMPLATE_TEXT_BROWSER_SS)
+
+        self.setStyleSheet(TEMPLATE_DIALOG_SS)
+
+        cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
+        cancel_button.setMaximumWidth(int(self.parent.width / 10))
+        cancel_button.clicked.connect(self.close)
+
+        send_button = auth.TransparentButton(text="Send emails", font_size=10, parent=self)
+        send_button.setMaximumWidth(int(self.parent.width / 5))
+        send_button.clicked.connect(self.send_emails)
+
+        layout = QGridLayout()
+        layout.addWidget(self.text_box, 0, 0, 1, 3)
+        layout.addWidget(send_button, 1, 0)
+        layout.addWidget(cancel_button, 1, 1)
+        self.setLayout(layout)
+        self.width = int(3 * self.parent.width / 4)
+        self.height = int(3 * self.parent.height / 4)
+        self.resize(self.width, self.height)
+        self.setWindowTitle("Template " + template_name)
+
+    def send_emails(self):
+        changed = self.text_box.toPlainText() != self.selected_template
+        ret = ReturnCodes.SUCCESS
+        """
+        if changed:
+            ret = self.client.send_emails(self.group, text_template=self.selected_template, flag=True)
+        else:
+            ret = self.client.send_emails(self.group, template_name=self.selected_template_name, flag=False)
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+        """
+        if ret == ReturnCodes.SUCCESS:
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_SEND_EMAILS, parent=self.parent.parent)
+            self.close()
+            self.parent.close()
+
+
 class ViewTemplates(QDialog):
-    def __init__(self, templates, client=None, parent=None):
+    def __init__(self, view_type, templates, client=None, parent=None, group=None):
         super(ViewTemplates, self).__init__(parent)
         self.setModal(True)
 
@@ -111,14 +169,25 @@ class ViewTemplates(QDialog):
         self.client = client
         self.width = parent.width
         self.height = parent.height
+        self.type = view_type
+        self.selected_template_name = ""
+        self.selected_template = ""
+        self.text_box = None
+        self.group = group
 
         self.list_templates = QListView()
         self.list_templates.setStyleSheet(TEMPLATE_LIST_VIEW_SS)
         self.list_templates.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         ok_button = auth.TransparentButton(text="View", font_size=10, parent=self)
+        if self.type == SELECT_TEMPLATE:
+            ok_button.setText("Select")
         ok_button.setMaximumWidth(int(parent.width / 10))
-        ok_button.clicked.connect(self.view_template)
+
+        if self.type == SELECT_TEMPLATE:
+            ok_button.clicked.connect(self.edit_template)
+        else:
+            ok_button.clicked.connect(self.view_template)
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
@@ -140,19 +209,47 @@ class ViewTemplates(QDialog):
     def cancel(self):
         self.close()
 
-    def view_template(self):
+    def edit_template(self):
+        if not self.list_templates.selectedIndexes():
+            alert(WARNING, WARNING, NO_INDEX_SELECTED, parent=self)
+            return
         idx = self.list_templates.selectedIndexes()[0]
         data = self.model.itemData(idx)[0]
         ret, template = self.client.get_template(data)
 
         if ret == ReturnCodes.NOT_AUTH:
-            alert(ERROR, ERROR, NOT_AUTH, parent=self)
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+            self.close()
+            return
+
+        if ret == ReturnCodes.RELOGIN:
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
+            self.close()
+            return
+
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
+            return
+
+        et = EditTemplate(data, template, self.client, self, self.group)
+        et.show()
+
+    def view_template(self):
+        if not self.list_templates.selectedIndexes():
+            alert(WARNING, WARNING, NO_INDEX_SELECTED, parent=self)
+            return
+        idx = self.list_templates.selectedIndexes()[0]
+        data = self.model.itemData(idx)[0]
+        ret, template = self.client.get_template(data)
+
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
             self.close()
             self.parent.return_to_login()
             return
 
         if ret == ReturnCodes.RELOGIN:
-            alert(ERROR, ERROR, RELOGIN_ERR, parent=self)
+            alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
             self.close()
             self.parent.return_to_login()
 
@@ -160,14 +257,20 @@ class ViewTemplates(QDialog):
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
 
+        qd = QDialog(parent=self)
+        qd.setStyleSheet(TEMPLATE_DIALOG_SS)
+
         tb = QTextBrowser()
         tb.setText(template)
 
-        qd = QDialog(parent=self)
-        qd.setStyleSheet(TEMPLATE_DIALOG_SS)
+        cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
+        cancel_button.setMaximumWidth(int(self.width / 10))
+        cancel_button.clicked.connect(qd.close)
+
         tb.setStyleSheet(TEMPLATE_TEXT_BROWSER_SS)
         layout = QVBoxLayout()
         layout.addWidget(tb)
+        layout.addWidget(cancel_button)
         qd.setLayout(layout)
         qd.resize(int(3 * self.width / 4), int(3 * self.height / 4))
         qd.setWindowTitle("Template " + data)
