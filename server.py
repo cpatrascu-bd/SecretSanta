@@ -10,7 +10,7 @@ from _thread import *
 # Global values
 SUCCESS = 1
 FAIL = 0
-DELIMITER = b'\x0a'.decode('utf-8')
+DELIMITER = b'\x15'.decode('utf-8')
 
 # File specific declarations
 CREDENTIALS = 'users/users.json'
@@ -38,6 +38,12 @@ def init():
 
     if not os.path.isdir(TEMPLATES):
         os.mkdir(TEMPLATES)
+    if not os.path.isdir('logs'):
+        os.mkdir('logs')
+    if not os.path.isdir('users'):
+        os.mkdir('users')
+    if not os.path.isdir('requests'):
+        os.mkdir('requests')
 
     try:
         sock.bind((HOST, PORT))
@@ -76,10 +82,10 @@ def remove_from_file(file, data):
         json.dump(content, f)
 
 
-def generate_token(username, userhash):
+def generate_token(username, password_hash):
     # Generate a unique token based on username and password hash. Adding a date string for security reasons
     m = hashlib.sha256()
-    m.update("".join([username, str(datetime.now()), userhash]).encode('utf-8'))
+    m.update("".join([username, str(datetime.now()), password_hash]).encode('utf-8'))
     return m.hexdigest()
 
 
@@ -151,7 +157,7 @@ def delete_group(name, token):
     return SUCCESS, 'Group successfully removed'
 
 
-def create_template(name, token, text):
+def create_template(name, text, token):
     # Check for valid data and write content to file
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
@@ -399,7 +405,7 @@ def connection_thread(conn, address):
     status, response = parse_command(data)
 
     with open(LOG, 'a') as log:
-        log.write("{} from client {}\n".format(data, address))
+        log.write("{} from client {}\n".format(data.replace(DELIMITER, '\t'), address))
         log.write('Response: {} {}\n\n'.format(status, response))
 
     conn.send(bytes("{} {}".format(status, response).encode('utf-8')))

@@ -5,7 +5,7 @@ import socket
 
 HOST = '127.0.0.1'
 PORT = 9001
-DELIMITER = b'\x0a'.decode('utf-8')
+DELIMITER = b'\x15'.decode('utf-8')
 
 class ReturnCodes(Enum):
     SUCCESS = 0

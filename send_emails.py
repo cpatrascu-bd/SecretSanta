@@ -15,7 +15,7 @@ sequence = []
 email = 'SantaClaus334CB@gmail.com'
 password = 'butelie123'
 subject = '{} Secret Santa'.format(group_name)
-phrase = 'Your Secret Santa person is: '
+phrase = '\n\nYour Secret Santa person is: '
 body = ''
 
 
@@ -32,11 +32,10 @@ def init():
     global sequence
 
     data = get_file_content(student_file)
-    users = get_file_content('./users.json')
+    users = get_file_content('users/users.json')
 
-    students = [item['email'] for item in users if item['username'] in data]
-    print(students)
-    body = get_file_content(template_file)
+    students = [(item['username'], item['email']) for item in users if item['username'] in data]
+    body = get_file_content(template_file)[0]
     sequence = [i for i in range(len(students))]
 
 
@@ -60,7 +59,7 @@ def send_email(target_email, picked_name):
         return
 
     message = '\r\n'.join(['To: %s' % target_email, 'From: %s' % email, 'Subject: %s' % subject,
-                           '', body + phrase + picked_name + '. \n\nCraciun fericit 🙂'])
+                           '', str(body) + str(phrase) + picked_name + '.'])
 
     try:
         server.sendmail(email, target_email, message)
@@ -75,8 +74,8 @@ def main():
     init()
     randomize()
 
-    for key in range(len(students)):
-        send_email(students[key][1], students[sequence[key]][0])
+    for name, mail in students:
+        send_email(mail, name)
 
 
 main()
