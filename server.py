@@ -4,6 +4,7 @@ import socket
 import json
 import os
 import hashlib
+import send_emails as mailer
 from datetime import datetime
 from _thread import *
 
@@ -334,13 +335,17 @@ def send_emails(group, data, flag, token):
     if get_group_admin(group) != get_token_user(token):
         return FAIL, 'User does not have enough privileges'
 
-    if flag:
+    if flag == 'True':
         template_file = 'temp.json'
         insert_into_file(template_file, data)
     else:
         template_file = TEMPLATES + data + '.json'
 
-    os.system('python3 send_email.py {} {} {}'.format(group, GROUPS + group + '.json', template_file))
+    ret = mailer.run(group, GROUPS + group + '.json', template_file)
+    if ret == 'FAIL':
+        return FAIL, 'Error while sending emails'
+
+    return SUCCESS, 'Mails have been sent'
 
 
 def parse_command(data):
@@ -392,7 +397,7 @@ def parse_command(data):
 
         if items[0] == 'SEND':
             if items[1] == 'EMAILS':
-                return send_emails(items[2], items[3], items[4], items[4])
+                return send_emails(items[2], items[3], items[4], items[5])
 
         return FAIL, 'Command does not exist'
     except IndexError:

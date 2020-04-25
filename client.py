@@ -263,9 +263,9 @@ class Client:
         if self.token == '':
             return ReturnCodes.NOT_AUTH
         if flag:
-            message = DELIMITER.join(['SEND', 'EMAILS', group_name, text_template, flag, self.token])
+            message = DELIMITER.join(['SEND', 'EMAILS', group_name, text_template, str(flag), self.token])
         else:
-            message = DELIMITER.join(['SEND', 'EMAILS', group_name, template_name, flag, self.token])
+            message = DELIMITER.join(['SEND', 'EMAILS', group_name, template_name, str(flag), self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
