@@ -375,7 +375,7 @@ def send_emails(group, data, flag, token):
         template_file = TEMPLATES + data + '.json'
 
     code = mailer.run(group, GROUPS + group + '.json', template_file, get_admin_email(get_group_admin(group)))
-    if code == FAIL:
+    if code == FAIL and group in timeouts.keys():
         del timeouts[group]
 
     if flag == 'True':
