@@ -180,9 +180,9 @@ class Client:
             self.current_group_admin = False
 
         if self.username in group_users:
-            self.in_current_group = True
+            self.in_last_group = True
         else:
-            self.in_current_group = False
+            self.in_last_group = False
         return ReturnCodes.SUCCESS, group_users
 
     def get_templates(self):
