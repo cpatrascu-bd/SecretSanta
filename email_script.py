@@ -11,7 +11,7 @@ students = []
 sequence = []
 
 email = 'SantaClaus334CB@gmail.com'
-password = 'butelie123'
+password = 'gqwqexjalssagezx'
 subject = 'Secret Santa Results'
 error_subject = 'Error while sending emails for Secret Santa.\n\n Please try again later.'
 phrase = '\n\nYour Secret Santa person is: '
