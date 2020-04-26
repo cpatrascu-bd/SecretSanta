@@ -33,10 +33,10 @@ REMOVE_USER_SUCCESS = "You have successfully removed that user!"
 LEAVE_GROUP_SUCCESS = "You have successfully left this group!"
 INVALID_DELETE_GROUP = "The group you are trying to remove does not exist!"
 SUCCESSFUL_DELETE_GROUP = "Group deleted successfully!"
-SUCCESSFUL_SEND_EMAILS = "You have successfully sent the emails!"
+SUCCESSFUL_SEND_REQUEST = "You have successfully sent the request to the server!"
 EMAILS_ALREADY_SENT = "You have already sent the emails"
 NO_INDEX_SELECTED = "Please select an element from the list"
-
+ALREADY_IN_GROUP = "You are already in this group!"
 
 def alert(type, title, text, parent=None):
     alert_msg = QMessageBox(parent=parent)

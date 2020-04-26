@@ -71,6 +71,7 @@ class AuthForm(QDialog):
 
         ok_button = TransparentButton(font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
+        ok_button.setMinimumHeight(int(parent.height / 15))
         if auth_type == 'S':
             self.edit_password2 = QLineEdit()
             self.edit_password2.setStyleSheet(AUTH_LINEEDIT_SS)
@@ -97,6 +98,7 @@ class AuthForm(QDialog):
 
         cancel_button = TransparentButton(text="Cancel", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
+        cancel_button.setMinimumHeight(int(parent.height / 15))
         cancel_button.clicked.connect(self.cancel)
 
         layout = QGridLayout()

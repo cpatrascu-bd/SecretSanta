@@ -42,10 +42,12 @@ class CreateTemplateGUI(QDialog):
 
         ok_button = auth.TransparentButton(text="Create", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
+        ok_button.setMinimumHeight(int(parent.height / 15))
         ok_button.clicked.connect(self.create_template)
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
+        cancel_button.setMinimumHeight(int(parent.height / 15))
         cancel_button.clicked.connect(self.cancel)
 
         layout = QGridLayout()
@@ -124,10 +126,12 @@ class EditTemplate(QDialog):
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(self.parent.width / 10))
+        cancel_button.setMinimumHeight(int(self.parent.height / 15))
         cancel_button.clicked.connect(self.close)
 
         send_button = auth.TransparentButton(text="Send emails", font_size=10, parent=self)
         send_button.setMaximumWidth(int(self.parent.width / 5))
+        send_button.setMinimumHeight(int(self.parent.height / 15))
         send_button.clicked.connect(self.send_emails)
 
         layout = QGridLayout()
@@ -146,12 +150,11 @@ class EditTemplate(QDialog):
             ret = self.client.send_emails(self.group, text_template=self.text_box.toPlainText(), flag=True)
         else:
             ret = self.client.send_emails(self.group, template_name=self.selected_template_name, flag=False)
-        ret = ReturnCodes.UNKNOWN_ERROR
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
         if ret == ReturnCodes.SUCCESS:
-            alert(SUCCESS, SUCCESS, SUCCESSFUL_SEND_EMAILS, parent=self.parent.parent)
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_SEND_REQUEST, parent=self.parent.parent)
             self.close()
             self.parent.close()
 
@@ -174,11 +177,13 @@ class ViewTemplates(QDialog):
         self.list_templates = QListView()
         self.list_templates.setStyleSheet(TEMPLATE_LIST_VIEW_SS)
         self.list_templates.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.list_templates.setMaximumWidth(int(2 * parent.width / 3))
 
         ok_button = auth.TransparentButton(text="View", font_size=10, parent=self)
         if self.type == SELECT_TEMPLATE:
             ok_button.setText("Select")
         ok_button.setMaximumWidth(int(parent.width / 10))
+        ok_button.setMinimumHeight(int(parent.height / 15))
 
         if self.type == SELECT_TEMPLATE:
             ok_button.clicked.connect(self.edit_template)
@@ -189,6 +194,7 @@ class ViewTemplates(QDialog):
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
+        cancel_button.setMinimumHeight(int(parent.height / 15))
         cancel_button.clicked.connect(self.cancel)
 
         layout = QGridLayout()
@@ -263,6 +269,7 @@ class ViewTemplates(QDialog):
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(self.width / 10))
+        cancel_button.setMinimumHeight(int(self.parent.height / 15))
         cancel_button.clicked.connect(qd.close)
 
         tb.setStyleSheet(TEMPLATE_TEXT_BROWSER_SS)

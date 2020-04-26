@@ -57,7 +57,7 @@ class CreateGroupGUI(QDialog):
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.clicked.connect(self.cancel)
-       
+
         layout = QGridLayout()
         layout.addWidget(label_groupname, 0, 0)
         layout.addWidget(self.edit_groupname, 0, 1, alignment=Qt.AlignHCenter)
@@ -138,11 +138,13 @@ class Joiner(QDialog):
         label_password.setBuddy(self.edit_password)
 
         join_pwd_button = auth.TransparentButton(text="Join with password", font_size=10, parent=self)
-        join_pwd_button.setMaximumWidth(int(parent.width/5))
+        join_pwd_button.setMaximumWidth(int(parent.width / 5))
+        join_pwd_button.setMinimumHeight(int(parent.height / 15))
         join_pwd_button.clicked.connect(self.join_password)
 
         join_button = auth.TransparentButton(text="Join Request", font_size=10, parent=self)
         join_button.setMaximumWidth(int(parent.width / 5))
+        join_button.setMinimumHeight(int(parent.height / 15))
         join_button.clicked.connect(self.join)
 
         layout = QGridLayout()
@@ -174,9 +176,10 @@ class Joiner(QDialog):
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
         if ret == ReturnCodes.SUCCESS:
-            alert(SUCCESS, SUCCESS, SUCCESSFUL_JOIN+self.group, parent=self.parent)
+            alert(SUCCESS, SUCCESS, SUCCESSFUL_JOIN + self.group, parent=self.parent)
         if not self.outer_join:
             self.parent.refresh_users_list()
+            self.parent.add_leave_button()
         self.close()
 
     def join(self):
@@ -212,14 +215,17 @@ class ViewRequests(QDialog):
 
         accept_button = auth.TransparentButton(text="Acept", font_size=10, parent=self)
         accept_button.setMaximumWidth(int(parent.width / 10))
+        accept_button.setMinimumHeight(int(parent.height / 15))
         accept_button.clicked.connect(self.accept_request)
 
         reject_button = auth.TransparentButton(text="Reject", font_size=10, parent=self)
         reject_button.setMaximumWidth(int(parent.width / 10))
+        reject_button.setMinimumHeight(int(parent.height / 15))
         reject_button.clicked.connect(self.reject_request)
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
+        cancel_button.setMinimumHeight(int(parent.height / 15))
         cancel_button.clicked.connect(self.close)
 
         layout = QGridLayout()
@@ -255,7 +261,7 @@ class ViewRequests(QDialog):
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
-        alert(SUCCESS, SUCCESS, "Request accepted", parent=self)
+        alert(SUCCESS, SUCCESS, "request accepted", parent=self)
         self.refresh_list()
         self.parent.refresh_users_list()
 
@@ -278,7 +284,7 @@ class ViewRequests(QDialog):
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
-        alert(SUCCESS, SUCCESS, "Request reejected", parent=self)
+        alert(SUCCESS, SUCCESS, "request reejected", parent=self)
         self.refresh_list()
 
     def refresh_list(self):
@@ -331,9 +337,11 @@ class ViewGroup(QDialog):
         close_button.setMinimumHeight(int(parent.height / 15))
         close_button.clicked.connect(self.exit)
 
-        layout = QGridLayout()
-        layout.addWidget(group_name_label, 0, 0, 1, 2, alignment=Qt.AlignCenter)
-        layout.addWidget(self.list_members, 1, 0, 10, 1)
+        self.layout = QGridLayout()
+        self.layout.addWidget(group_name_label, 0, 0, 1, 2, alignment=Qt.AlignCenter)
+        self.layout.addWidget(self.list_members, 1, 0, 10, 1)
+
+        self.join_button = None
 
         if self.admin_view:
             remove_user_button = auth.TransparentButton(text="Remove User", font_size=10, parent=self)
@@ -356,33 +364,42 @@ class ViewGroup(QDialog):
             join_requests_button.setMinimumHeight(int(parent.height / 15))
             join_requests_button.clicked.connect(self.see_requests)
 
-            layout.addWidget(join_requests_button, 2, 1)
-            layout.addWidget(remove_user_button, 3, 1)
-            layout.addWidget(delete_group_button, 4, 1)
-            layout.addWidget(send_emails_button, 5, 1)
+            self.layout.addWidget(join_requests_button, 2, 1)
+            self.layout.addWidget(remove_user_button, 3, 1)
+            self.layout.addWidget(delete_group_button, 4, 1)
+            self.layout.addWidget(send_emails_button, 5, 1)
         else:
-            join_group_button = auth.TransparentButton(text="Join group", font_size=10, parent=self)
-            join_group_button.setMaximumWidth(int(parent.width / 5))
-            join_group_button.setMinimumHeight(int(parent.height / 15))
-            join_group_button.clicked.connect(self.join_group)
+            if self.client.check_if_in_group(group_name):
+                self.add_leave_button()
+            else:
+                join_group_button = auth.TransparentButton(text="Join group", font_size=10, parent=self)
+                join_group_button.setMaximumWidth(int(parent.width / 5))
+                join_group_button.setMinimumHeight(int(parent.height / 15))
+                join_group_button.clicked.connect(self.join_group)
+                self.join_button = join_group_button
+                self.layout.addWidget(join_group_button, 5, 1)
 
-            leave_group_button = auth.TransparentButton(text="Leave group", font_size=10, parent=self)
-            leave_group_button.setMaximumWidth(int(parent.width / 5))
-            leave_group_button.setMinimumHeight(int(parent.height / 15))
-            leave_group_button.clicked.connect(self.leave_group)
+        self.layout.addWidget(close_button, 8, 1)
 
-            layout.addWidget(join_group_button, 4, 1)
-            layout.addWidget(leave_group_button, 5, 1)
-
-        layout.addWidget(close_button, 8, 1)
-
-        self.setLayout(layout)
-        self.setWindowTitle("Group "+group_name)
+        self.setLayout(self.layout)
+        self.setWindowTitle("Group " + group_name)
         self.resize(self.width, self.height)
 
     def join_group(self):
+        if self.client.check_if_in_group(self.group_name):
+            alert(WARNING, WARNING, ALREADY_IN_GROUP, parent=self)
+            return
         joiner = Joiner(self.group_name, santa_client=self.client, parent=self)
         joiner.show()
+
+    def add_leave_button(self):
+        leave_group_button = auth.TransparentButton(text="Leave group", font_size=10, parent=self)
+        leave_group_button.setMaximumWidth(int(self.parent.width / 5))
+        leave_group_button.setMinimumHeight(int(self.parent.height / 15))
+        leave_group_button.clicked.connect(self.leave_group)
+        if self.join_button:
+            self.join_button.deleteLater()
+        self.layout.addWidget(leave_group_button, 5, 1)
 
     def refresh_users_list(self):
         ret, group = self.client.get_group(self.group_name)
@@ -530,19 +547,23 @@ class ViewGroups(QDialog):
         self.list_groups = QListView()
         self.list_groups.setStyleSheet(GROUP_LIST_VIEW_SS)
         self.list_groups.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.list_groups.setMaximumWidth(int(2 * parent.width / 3))
 
         self.list_groups.doubleClicked.connect(self.select_group)
 
         ok_button = auth.TransparentButton(text="View", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
+        ok_button.setMinimumHeight(int(parent.height / 15))
         ok_button.clicked.connect(self.view_group)
 
         join_button = auth.TransparentButton(text="Join", font_size=10, parent=self)
         join_button.setMaximumWidth(int(parent.width / 10))
+        join_button.setMinimumHeight(int(parent.height / 15))
         join_button.clicked.connect(self.join_group)
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
+        cancel_button.setMinimumHeight(int(parent.height / 15))
         cancel_button.clicked.connect(self.cancel)
 
         layout = QGridLayout()
@@ -590,6 +611,11 @@ class ViewGroups(QDialog):
             return
         idx = self.list_groups.selectedIndexes()[0]
         group_name = self.model.itemData(idx)[0]
+
+        if self.client.check_if_in_group(group_name):
+            alert(WARNING, WARNING, ALREADY_IN_GROUP, parent=self)
+            return
+
         joiner = Joiner(group_name, outer_join=True, santa_client=self.client, parent=self)
         joiner.show()
 
