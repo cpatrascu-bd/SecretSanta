@@ -12,6 +12,7 @@ from _thread import *
 SUCCESS = 1
 FAIL = 0
 DELIMITER = b'\x15'.decode('utf-8')
+DAYS_LIMIT = 345600
 
 # File specific declarations
 CREDENTIALS = 'users/users.json'
@@ -28,8 +29,9 @@ HOST = '127.0.0.1'
 PORT = 9001
 sock = socket.socket()
 
-# Session tokens for authenticated users
+# Session tokens for authenticated users and groups timeouts
 tokens = {}
+timeouts = {}
 
 
 def init():
@@ -142,6 +144,7 @@ def create_group(name, password_hash, token):
 
     insert_into_file(filename, password_hash)
     insert_into_file(filename, get_token_user(token))
+    timeouts[name] = 0
 
     return SUCCESS, 'Group {} created'.format(name.split('.')[0])
 
@@ -151,11 +154,27 @@ def delete_group(name, token):
     if name not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
         return FAIL, 'Group does not exist'
 
-    if token not in tokens.values() or get_group_admin(name) not in tokens.keys() or tokens[get_group_admin(name)] != token:
+    if token not in tokens.values() or get_group_admin(name) not in tokens.keys()\
+       or tokens[get_group_admin(name)] != token:
         return FAIL, 'Token not valid. Please re-authenticate'
 
     os.remove(GROUPS + name + '.json')
     return SUCCESS, 'Group successfully removed'
+
+
+def group_timeout(name, token):
+    # Check user to be group admin
+    if token not in tokens.values():
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    if get_group_admin(name) != get_token_user(token):
+        return FAIL, 'User not admin of the group'
+
+    if timeouts[name] - datetime.now() > DAYS_LIMIT:
+        return FAIL, 'You can send emails only once in 4 days'
+
+    timeouts[name] = datetime.now()
+    return SUCCESS, 'Request successfully submitted'
 
 
 def create_template(name, text, token):
@@ -398,10 +417,13 @@ def parse_command(data):
         if items[0] == 'LOGOUT':
             return logout(items[1])
 
-        if items[0] == 'SEND':
-            if items[1] == 'EMAILS':
+        if items[0] == 'SEND' and items[1] == 'EMAILS':
+            child_pid = os.fork()
+            if not child_pid:
                 send_emails(items[2], items[3], items[4], items[5])
-                return SUCCESS, 'Request submitted successfully'
+                os._exit(0)
+            else:
+                return group_timeout(items[2], items[5])
 
         return FAIL, 'Command does not exist'
     except IndexError:
