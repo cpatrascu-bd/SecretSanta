@@ -28,6 +28,7 @@ class ReturnCodes(Enum):
     INVALID_REQUEST = -17
     NOT_AUTH = -18
     YOU_ADMIN = -19
+    WAIT = -20
 
 class Answer():
     ACCEPT = 'ACCEPT'

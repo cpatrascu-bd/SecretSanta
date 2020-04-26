@@ -266,11 +266,18 @@ class Client:
             message = DELIMITER.join(['SEND', 'EMAILS', group_name, text_template, str(flag), self.token])
         else:
             message = DELIMITER.join(['SEND', 'EMAILS', group_name, template_name, str(flag), self.token])
+        print(1)
         answer = Utils.send_message_to_server(message)
+        print(answer)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '1':
             return ReturnCodes.SUCCESS
+        if answer[2:] == 'User not admin of the group':
+            return ReturnCodes.NOT_ADMIN
+        if answer[2:] == 'You can send emails only once in 4 days':
+            return ReturnCodes.WAIT
+
         return ReturnCodes.UNKNOWN_ERROR
 
     def if_admin(self):

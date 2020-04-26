@@ -103,4 +103,8 @@ in_current_group() -> verifica daca userul logat e in grupul curent ( ultimul pe
 check_if_in_group(group_name): -> verifica daca userul e in group_name -> face request la server
     True
     False
+
+def send_emails(self, group_name, template_name="", text_template="", flag=False):
+    NOT_ADMIN
+    WAIT
 	
