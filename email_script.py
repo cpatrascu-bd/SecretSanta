@@ -13,7 +13,7 @@ sequence = []
 email = 'SantaClaus334CB@gmail.com'
 password = 'butelie123'
 subject = 'Secret Santa Results'
-error_subject = 'Error while sending emails for Secret Santa'
+error_subject = 'Error while sending emails for Secret Santa.\n\n Please try again later.'
 phrase = '\n\nYour Secret Santa person is: '
 ante_body = 'Group: '
 body = ''
@@ -88,3 +88,6 @@ def run(group_name, student_file, template_file, admin_email):
 
     if err_body:
         send_email(admin_email, error_subject,  err_body)
+        return FAIL
+
+    return SUCCESS

@@ -4,8 +4,8 @@ import socket
 import json
 import os
 import hashlib
+import time
 import email_script as mailer
-from datetime import datetime
 from _thread import *
 
 # Global values
@@ -88,7 +88,7 @@ def remove_from_file(file, data):
 def generate_token(username, password_hash):
     # Generate a unique token based on username and password hash. Adding a date string for security reasons
     m = hashlib.sha256()
-    m.update("".join([username, str(datetime.now()), password_hash]).encode('utf-8'))
+    m.update("".join([username, str(time.time()), password_hash]).encode('utf-8'))
     return m.hexdigest()
 
 
@@ -144,7 +144,6 @@ def create_group(name, password_hash, token):
 
     insert_into_file(filename, password_hash)
     insert_into_file(filename, get_user_token(token))
-    timeouts[name] = 0
 
     return SUCCESS, 'Group {} created'.format(name.split('.')[0])
 
@@ -208,8 +207,8 @@ def group_timeout(name, token):
     if get_group_admin(name) != get_user_token(token):
         return FAIL, 'User not admin of the group'
 
-    if name not in timeouts.keys() or timeouts[name] - datetime.now() < DAYS_LIMIT:
-        timeouts[name] = datetime.now()
+    if name not in timeouts.keys() or timeouts[name] - time.time() > DAYS_LIMIT:
+        timeouts[name] = time.time()
         return SUCCESS, 'Request successfully submitted'
 
     return FAIL, 'You can send emails only once in 4 days'
@@ -361,7 +360,7 @@ def request_deny(username, group, token):
 
 
 def send_emails(group, data, flag, token):
-    # Check user privileges and if data is valid and then call the script to send emails
+    # Check user privileges and call the script. If it fails, reset the timeout
     code, msg = valid_token_group(group, token)
     if code == FAIL:
         return code, msg
@@ -375,7 +374,9 @@ def send_emails(group, data, flag, token):
     else:
         template_file = TEMPLATES + data + '.json'
 
-    mailer.run(group, GROUPS + group + '.json', template_file, get_admin_email(get_group_admin(group)))
+    code = mailer.run(group, GROUPS + group + '.json', template_file, get_admin_email(get_group_admin(group)))
+    if code == FAIL:
+        del timeouts[group]
 
     if flag == 'True':
         os.remove('temp.json')
