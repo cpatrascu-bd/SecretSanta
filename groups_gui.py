@@ -369,7 +369,7 @@ class ViewGroup(QDialog):
             self.layout.addWidget(delete_group_button, 4, 1)
             self.layout.addWidget(send_emails_button, 5, 1)
         else:
-            if self.client.check_if_in_group(group_name):
+            if self.client.in_current_group():
                 self.add_leave_button()
             else:
                 join_group_button = auth.TransparentButton(text="Join group", font_size=10, parent=self)
@@ -386,7 +386,7 @@ class ViewGroup(QDialog):
         self.resize(self.width, self.height)
 
     def join_group(self):
-        if self.client.check_if_in_group(self.group_name):
+        if self.client.in_current_group():
             alert(WARNING, WARNING, ALREADY_IN_GROUP, parent=self)
             return
         joiner = Joiner(self.group_name, santa_client=self.client, parent=self)
