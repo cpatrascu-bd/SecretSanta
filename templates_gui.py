@@ -153,6 +153,16 @@ class EditTemplate(QDialog):
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
+        if ret == ReturnCodes.WAIT:
+            alert(WARNING, WARNING, EMAILS_ALREADY_SENT, parent=self.parent.parent)
+            self.close()
+            self.parent.close()
+            return
+        if ret == ReturnCodes.CONNECTION_ERROR:
+            alert(ERROR, ERROR, CONNECTION_ERROR, parent=self.parent.parent)
+            self.close()
+            self.parent.close()
+            return
         if ret == ReturnCodes.SUCCESS:
             alert(SUCCESS, SUCCESS, SUCCESSFUL_SEND_REQUEST, parent=self.parent.parent)
             self.close()

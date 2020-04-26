@@ -207,11 +207,7 @@ class AuthForm(QDialog):
             self.edit_password.clear()
 
     def cancel(self):
-        dash = dashboard.Dashboard(width=self.parent.width, height=self.parent.height, papa=self.parent,
-                                   client=self.client)
         self.close()
-        self.parent.hide()
-        dash.exec_()
 
 
 class Authentication(QDialog):

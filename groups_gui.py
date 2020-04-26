@@ -52,10 +52,12 @@ class CreateGroupGUI(QDialog):
 
         ok_button = auth.TransparentButton(text="Create", font_size=10, parent=self)
         ok_button.setMaximumWidth(int(parent.width / 10))
+        ok_button.setMinimumHeight(int(parent.height / 15))
         ok_button.clicked.connect(self.create_group)
 
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
+        cancel_button.setMinimumHeight(int(parent.height / 15))
         cancel_button.clicked.connect(self.cancel)
 
         layout = QGridLayout()
@@ -158,6 +160,7 @@ class Joiner(QDialog):
         self.height = 3 * parent.height / 8
         self.resize(self.width, self.height)
         self.edit_password.setFocus()
+        self.setWindowTitle("Join group")
 
     def join_password(self):
         ret = self.client.join_group_with_pass(self.group, self.edit_password.text())
@@ -339,7 +342,7 @@ class ViewGroup(QDialog):
 
         self.layout = QGridLayout()
         self.layout.addWidget(group_name_label, 0, 0, 1, 2, alignment=Qt.AlignCenter)
-        self.layout.addWidget(self.list_members, 1, 0, 10, 1)
+        self.layout.addWidget(self.list_members, 1, 0, 8, 1)
 
         self.join_button = None
 
@@ -369,7 +372,7 @@ class ViewGroup(QDialog):
             self.layout.addWidget(delete_group_button, 4, 1)
             self.layout.addWidget(send_emails_button, 5, 1)
         else:
-            if self.client.check_if_in_group(group_name):
+            if self.client.in_current_group():
                 self.add_leave_button()
             else:
                 join_group_button = auth.TransparentButton(text="Join group", font_size=10, parent=self)
@@ -377,16 +380,16 @@ class ViewGroup(QDialog):
                 join_group_button.setMinimumHeight(int(parent.height / 15))
                 join_group_button.clicked.connect(self.join_group)
                 self.join_button = join_group_button
-                self.layout.addWidget(join_group_button, 5, 1)
+                self.layout.addWidget(join_group_button, 3, 1)
 
-        self.layout.addWidget(close_button, 8, 1)
+        self.layout.addWidget(close_button, 6, 1)
 
         self.setLayout(self.layout)
         self.setWindowTitle("Group " + group_name)
         self.resize(self.width, self.height)
 
     def join_group(self):
-        if self.client.check_if_in_group(self.group_name):
+        if self.client.in_current_group():
             alert(WARNING, WARNING, ALREADY_IN_GROUP, parent=self)
             return
         joiner = Joiner(self.group_name, santa_client=self.client, parent=self)
@@ -399,7 +402,7 @@ class ViewGroup(QDialog):
         leave_group_button.clicked.connect(self.leave_group)
         if self.join_button:
             self.join_button.deleteLater()
-        self.layout.addWidget(leave_group_button, 5, 1)
+        self.layout.addWidget(leave_group_button, 3, 1)
 
     def refresh_users_list(self):
         ret, group = self.client.get_group(self.group_name)
