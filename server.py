@@ -430,12 +430,8 @@ def parse_command(data):
             return logout(items[1])
 
         if items[0] == 'SEND' and items[1] == 'EMAILS':
-            child_pid = os.fork()
-            if not child_pid:
-                send_emails(items[2], items[3], items[4], items[5])
-                os._exit(0)
-            else:
-                return group_timeout(items[2], items[5])
+            start_new_thread(send_emails, (items[2], items[3], items[4], items[5]))
+            return group_timeout(items[2], items[5])
 
         return FAIL, 'Command does not exist'
     except IndexError:
