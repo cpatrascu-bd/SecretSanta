@@ -92,7 +92,7 @@ def generate_token(username, password_hash):
     return m.hexdigest()
 
 
-def get_token_user(token):
+def get_user_token(token):
     return [user for user, tok in tokens.items() if tok == token][0]
 
 
@@ -129,7 +129,7 @@ def logout(token):
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    del tokens[get_token_user(token)]
+    del tokens[get_user_token(token)]
     return SUCCESS, 'User successfully logged out'
 
 
@@ -143,51 +143,10 @@ def create_group(name, password_hash, token):
         return FAIL, 'Group name already exists'
 
     insert_into_file(filename, password_hash)
-    insert_into_file(filename, get_token_user(token))
+    insert_into_file(filename, get_user_token(token))
     timeouts[name] = 0
 
     return SUCCESS, 'Group {} created'.format(name.split('.')[0])
-
-
-def delete_group(name, token):
-    # Check if token belongs to group owner and delete the whole group file
-    if name not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
-        return FAIL, 'Group does not exist'
-
-    if token not in tokens.values() or get_group_admin(name) not in tokens.keys()\
-       or tokens[get_group_admin(name)] != token:
-        return FAIL, 'Token not valid. Please re-authenticate'
-
-    os.remove(GROUPS + name + '.json')
-    return SUCCESS, 'Group successfully removed'
-
-
-def group_timeout(name, token):
-    # Check user to be group admin
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
-
-    if get_group_admin(name) != get_token_user(token):
-        return FAIL, 'User not admin of the group'
-
-    if timeouts[name] - datetime.now() > DAYS_LIMIT:
-        return FAIL, 'You can send emails only once in 4 days'
-
-    timeouts[name] = datetime.now()
-    return SUCCESS, 'Request successfully submitted'
-
-
-def create_template(name, text, token):
-    # Check for valid data and write content to file
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
-
-    filename = TEMPLATES + name + '.json'
-    if os.path.isfile(filename):
-        return FAIL, 'Template name already exists'
-
-    insert_into_file(filename, text)
-    return SUCCESS, 'Template {} created'.format(name.split('.')[0])
 
 
 def get_group_admin(name):
@@ -206,28 +165,54 @@ def get_groups(token):
     return SUCCESS, [name.split('.')[0] for name in os.listdir(GROUPS)]
 
 
+def valid_token_group(group, token):
+    # Check if token and groups exists
+    code, msg = get_groups(token)
+    if code == FAIL:
+        return code, msg
+
+    if group not in msg:
+        return FAIL, 'Group does not exist'
+
+    return SUCCESS, 'All good'
+
+
 def get_group(name, token):
     # Get a specific group data by retrieving the file content
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
+    code, msg = valid_token_group(name, token)
+    if code == FAIL:
+        return code, msg
 
     return SUCCESS, get_file_content(GROUPS + name + '.json')[1:]
 
 
-def get_templates(token):
-    # List the template folder in order to get all templates names
-    if token not in tokens.values():
+def delete_group(name, token):
+    # Check if token belongs to group owner and delete the whole group file
+    if name not in get_groups(token)[1]:
+        return FAIL, 'Group does not exist'
+
+    if token not in tokens.values() or get_group_admin(name) not in tokens.keys()\
+       or tokens[get_group_admin(name)] != token:
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    return SUCCESS, [name.split('.')[0] for name in os.listdir(TEMPLATES)]
+    os.remove(GROUPS + name + '.json')
+    return SUCCESS, 'Group successfully removed'
 
 
-def get_template(name, token):
-    # Get a specific template by retrieving the file content
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
+def group_timeout(name, token):
+    # Check user to be group admin
+    code, msg = valid_token_group(name, token)
+    if code == FAIL:
+        return code, msg
 
-    return SUCCESS, get_file_content(TEMPLATES + name + '.json')[0]
+    if get_group_admin(name) != get_user_token(token):
+        return FAIL, 'User not admin of the group'
+
+    if name not in timeouts.keys() or timeouts[name] - datetime.now() < DAYS_LIMIT:
+        timeouts[name] = datetime.now()
+        return SUCCESS, 'Request successfully submitted'
+
+    return FAIL, 'You can send emails only once in 4 days'
 
 
 def add_to_group(username, group, password_hash, token):
@@ -235,7 +220,7 @@ def add_to_group(username, group, password_hash, token):
     if username not in tokens.keys() or tokens[username] != token:
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
+    if group not in get_groups(token)[1]:
         return FAIL, 'Group does not exist'
 
     content = get_file_content(GROUPS + group + '.json')
@@ -248,15 +233,46 @@ def add_to_group(username, group, password_hash, token):
     return SUCCESS, 'User added to group'
 
 
-def get_requests(group, token):
-    # Check if token is valid and retrieve all join requests for the group
+def create_template(name, text, token):
+    # Check for valid data and write content to file
     if token not in tokens.values():
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
-        return FAIL, 'Group does not exist'
+    filename = TEMPLATES + name + '.json'
+    if os.path.isfile(filename):
+        return FAIL, 'Template name already exists'
 
-    if get_token_user(token) != get_group_admin(group):
+    insert_into_file(filename, text)
+    return SUCCESS, 'Template {} created'.format(name.split('.')[0])
+
+
+def get_templates(token):
+    # List the template folder in order to get all templates names
+    if token not in tokens.values():
+        return FAIL, 'Token not valid. Please re-authenticate'
+
+    return SUCCESS, [name.split('.')[0] for name in os.listdir(TEMPLATES)]
+
+
+def get_template(name, token):
+    # Get a specific template by retrieving the file content
+    code, msg = get_templates(token)
+    if code == FAIL:
+        return code, msg
+
+    if name not in msg:
+        return FAIL, 'Template does not exist'
+
+    return SUCCESS, get_file_content(TEMPLATES + name + '.json')[0]
+
+
+def get_requests(group, token):
+    # Check if token is valid and retrieve all join requests for the group
+    code, msg = valid_token_group(group, token)
+    if code == FAIL:
+        return code, msg
+
+    if get_user_token(token) != get_group_admin(group):
         return FAIL, 'User not group\'s admin'
 
     requests = [request for request in get_file_content(REQUESTS) if request['group'] == group]
@@ -269,7 +285,7 @@ def request_join(username, group, token):
     if username not in tokens.keys() or tokens[username] != token:
         return FAIL, 'Token not valid. Please re-authenticate'
 
-    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
+    if group not in get_groups(token)[1]:
         return FAIL, 'Group does not exist'
 
     filename = GROUPS + group + '.json'
@@ -286,13 +302,11 @@ def request_join(username, group, token):
 
 def request_unjoin(username, group, token):
     # Check user privileges and if data is valid and then remove group from group
-    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
-        return FAIL, 'Group does not exist'
+    code, msg = valid_token_group(group, token)
+    if code == FAIL:
+        return code, msg
 
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
-
-    if get_token_user(token) != get_group_admin(group) and get_token_user(token) != username:
+    if get_user_token(token) != get_group_admin(group) and get_user_token(token) != username:
         return FAIL, 'User does not have enough privileges'
 
     if username == get_group_admin(group):
@@ -308,11 +322,9 @@ def request_unjoin(username, group, token):
 
 def request_accept(username, group, token):
     # Check user privileges and if data is valid and then remove the request from file while adding user to group
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
-
-    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
-        return FAIL, 'Group does not exist'
+    code, msg = valid_token_group(group, token)
+    if code == FAIL:
+        return code, msg
 
     data = {'username': username, 'group': group}
     if os.path.isfile(REQUESTS) and data not in get_file_content(REQUESTS):
@@ -323,7 +335,7 @@ def request_accept(username, group, token):
         return FAIL, 'Username already enrolled'
 
     # Check if the user accepting is the group's admin
-    if get_group_admin(group) == get_token_user(token):
+    if get_group_admin(group) == get_user_token(token):
         remove_from_file(REQUESTS, data)
         insert_into_file(GROUPS + group + '.json', username)
         return SUCCESS, 'Request accepted'
@@ -333,17 +345,15 @@ def request_accept(username, group, token):
 
 def request_deny(username, group, token):
     # Check user privileges and if data is valid and then remove the request from file
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
-
-    if group not in [name.split('.')[0] for name in os.listdir(GROUPS)]:
-        return FAIL, 'Group does not exist'
+    code, msg = valid_token_group(group, token)
+    if code == FAIL:
+        return code, msg
 
     data = {'username': username, 'group': group}
     if os.path.isfile(REQUESTS) and data not in get_file_content(REQUESTS):
         return FAIL, 'Request does not exists'
 
-    if get_group_admin(group) == get_token_user(token):
+    if get_group_admin(group) == get_user_token(token):
         remove_from_file(REQUESTS, data)
         return SUCCESS, 'Request denied'
 
@@ -352,10 +362,11 @@ def request_deny(username, group, token):
 
 def send_emails(group, data, flag, token):
     # Check user privileges and if data is valid and then call the script to send emails
-    if token not in tokens.values():
-        return FAIL, 'Token not valid. Please re-authenticate'
+    code, msg = valid_token_group(group, token)
+    if code == FAIL:
+        return code, msg
 
-    if get_group_admin(group) != get_token_user(token):
+    if get_group_admin(group) != get_user_token(token):
         return FAIL, 'User does not have enough privileges'
 
     if flag == 'True':
