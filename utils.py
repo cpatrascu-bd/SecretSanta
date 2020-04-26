@@ -3,8 +3,6 @@ import re
 import hashlib
 import socket
 import re
-import smtplib
-import dns.resolver
 
 
 
