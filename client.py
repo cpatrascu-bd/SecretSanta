@@ -17,7 +17,7 @@ class Client:
             return ReturnCodes.WRONG_FORMAT_USERNAME
         if len(password) < 6:
             return ReturnCodes.WRONG_FORMAT_PASSWORD
-        if not Utils.email_pattern.match(email):
+        if not Utils.check_email(email):
             return ReturnCodes.INVALID_EMAIL
 
         sha_password = Utils.encrypt_string(password)
@@ -161,7 +161,8 @@ class Client:
             return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '0':
             return Utils.get_error_check(answer)
-        groups = answer[3:-1].replace("'", '').split(", ")
+
+        groups = ast.literal_eval(answer[2:])
         return ReturnCodes.SUCCESS, groups
 
     def get_group(self, name):
@@ -173,7 +174,8 @@ class Client:
             return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '0':
             return Utils.get_error_check(answer)
-        group_users = answer[3:-1].replace("'", '').split(", ")
+
+        group_users = ast.literal_eval(answer[2:])
         if self.username == group_users[0]:
             self.current_group_admin = True
         else:
@@ -192,7 +194,7 @@ class Client:
         answer = Utils.send_message_to_server(message)
         if answer[0] == '0':
             return Utils.get_error_check(answer)
-        templates = answer[3:-1].replace("'", '').split(", ")
+        templates = ast.literal_eval(answer[2:])
         return ReturnCodes.SUCCESS, templates
 
     def get_template(self, name):
@@ -266,9 +268,7 @@ class Client:
             message = DELIMITER.join(['SEND', 'EMAILS', group_name, text_template, str(flag), self.token])
         else:
             message = DELIMITER.join(['SEND', 'EMAILS', group_name, template_name, str(flag), self.token])
-        print(1)
         answer = Utils.send_message_to_server(message)
-        print(answer)
         if answer == 'communication_error':
             return ReturnCodes.CONNECTION_ERROR
         if answer[0] == '1':

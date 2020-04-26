@@ -2,6 +2,11 @@ from enum import Enum
 import re
 import hashlib
 import socket
+import re
+import smtplib
+import dns.resolver
+
+
 
 HOST = '127.0.0.1'
 PORT = 9001
@@ -44,6 +49,11 @@ class Utils():
         return sha_signature
 
     @staticmethod
+    def check_email(email):
+        return Utils.email_pattern.match(email)
+
+
+    @staticmethod
     def send_message_to_server(message):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -73,6 +83,8 @@ class Utils():
         if answer[2:] == 'User not admin of the group':
             return ReturnCodes.NOT_ADMIN
         return ReturnCodes.UNKNOWN_ERROR
+
+
 
 
 
