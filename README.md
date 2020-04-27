@@ -46,6 +46,7 @@ This information will be send by email.
 - `sudo apt-get install pyqt5-dev-tools`
 - `sudo apt-get install qttools5-dev-tools`
 - `git clone https://github.com/cristi799/SecretSanta`
+- Set your gmail username and the app generated password from 2FA in email_script.py
 - `cd SecretSanta && python3 server.py& && python3 auth.py`
 
 Also, using pyinstaller, you can generate portable executables for both Windows and Linux:
