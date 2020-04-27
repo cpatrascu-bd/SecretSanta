@@ -42,7 +42,7 @@ Simply download the binary files for your operating system and run them.
 - `sudo apt-get install -y python3.8  python3-pip`
 - `pip install PyQt5`
 - `git clone https://github.com/cristi799/SecretSanta`
-- `cd SecretSanta && python server.py && python auth.exe`
+- `cd SecretSanta && python server.py& && python py.exe&`
 
 Enjoy!
 	
