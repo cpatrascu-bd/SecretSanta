@@ -6,7 +6,6 @@ import os
 import hashlib
 import time
 import email_script as mailer
-from validate_email import validate_email
 from _thread import *
 
 # Global values
@@ -99,12 +98,6 @@ def get_user_token(token):
 
 def create_account(username, password_hash, email):
     # Create a new account entry if username has not already been taken
-    ret = validate_email(email, check_mx=True, verify=True, smtp_timeout=5)
-    if not ret:
-        return FAIL, 'Email address does not exist'
-    if not ret:
-        return FAIL, 'Email domain does not exist'
-
     data = {'username': username, 'password': password_hash, 'email': email}
 
     if os.path.isfile(CREDENTIALS):
