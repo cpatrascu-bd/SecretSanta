@@ -34,11 +34,16 @@ This information will be send by email.
 
 ## Installation
 
+### Binary release
+Simply download the binary files for your operating system and run them.
+
+### Script release
 - `sudo apt-get update`
 - `sudo apt-get install -y python3.8  python3-pip`
 - `pip install PyQt5`
+- `git clone https://github.com/cristi799/SecretSanta`
+- `cd SecretSanta && python server.py && python auth.exe`
 
-Download or clone this repository.
 Enjoy!
 	
 ## Usage
