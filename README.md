@@ -50,9 +50,10 @@ For the server side, you have to run server.py.
 ###### Client
 You will have to run auth.py.
 This will prompt a login window.
+Here you can create an account that will be stored on server.
 ![login](https://user-images.githubusercontent.com/47899873/80350739-da1d6000-8879-11ea-9582-bc60324b41db.png)
 
-Here you can create an account that will be stored on server.
+
 After that, you can login. Now the dashboard will be prompted.
 ![dashboard](https://user-images.githubusercontent.com/47899873/80350899-15b82a00-887a-11ea-842c-9774fb095f9b.png)
 
@@ -63,6 +64,7 @@ Here you have 4 options:
 	View Templates
 
 Create Group: 
+
 ![create_group](https://user-images.githubusercontent.com/47899873/80351035-53b54e00-887a-11ea-99bb-51ba4276ee47.png)
 
 View Groups:
