@@ -19,7 +19,9 @@ This information will be send by email.
 
 # Features
 
-
+- a 
+- b
+- c
 
 ## Requirements
 
