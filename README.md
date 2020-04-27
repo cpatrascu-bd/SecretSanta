@@ -51,10 +51,12 @@ For the server side, you have to run server.py.
 You will have to run auth.py.
 This will prompt a login window.
 Here you can create an account that will be stored on server.
+
 ![login](https://user-images.githubusercontent.com/47899873/80350739-da1d6000-8879-11ea-9582-bc60324b41db.png)
 
 
 After that, you can login. Now the dashboard will be prompted.
+
 ![dashboard](https://user-images.githubusercontent.com/47899873/80350899-15b82a00-887a-11ea-842c-9774fb095f9b.png)
 
 Here you have 4 options:
