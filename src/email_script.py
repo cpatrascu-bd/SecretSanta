@@ -10,8 +10,8 @@ FAIL = 0
 students = []
 sequence = []
 
-email = 'SantaClaus334CB@gmail.com'
-password = 'gqwqexjalssagezx'
+email = 'YOUR_EMAIL'
+password = 'APP_PASSWORD_2FA'
 subject = 'Secret Santa Results'
 error_subject = 'Error while sending emails for Secret Santa.\n\n Please try again later.'
 phrase = '\n\nYour Secret Santa person is: '
