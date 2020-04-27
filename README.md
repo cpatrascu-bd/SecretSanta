@@ -17,7 +17,7 @@ When the group admin decides , the application, for each member group, will rado
 This information will be send by email.
 
 
-# Features
+## Features
 
 - Compatible to Linux and Windows client systems
 - You can create and manage Secret Santa groups
