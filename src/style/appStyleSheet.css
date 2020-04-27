@@ -1,0 +1,65 @@
+Authentication {
+    border-image: url("style/main-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+Dashboard {
+    border-image: url("style/main-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+AuthForm {
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+CreateGroupGUI{
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+CreateTemplateGUI{
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+ViewTemplates {
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+ViewGroups {
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+Joiner {
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+ViewGroup {
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+ViewRequests {
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+EditTemplate {
+    border-image: url("style/form-background.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+}
