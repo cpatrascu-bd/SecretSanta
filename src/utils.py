@@ -5,7 +5,7 @@ import socket
 import re
 
 
-HOST = '192.168.1.3'
+HOST = '18.219.213.57'
 PORT = 9001
 DELIMITER = b'\x15'.decode('utf-8')
 
@@ -54,7 +54,7 @@ class Utils():
     def send_message_to_server(message):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((socket.gethostname(), PORT))
+                s.connect((HOST, PORT))
                 s.sendall(message.encode())
                 data = s.recv(1024)
             return data.decode()

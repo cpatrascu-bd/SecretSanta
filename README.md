@@ -19,10 +19,16 @@ This information will be send by email.
 
 ## Features
 
-- Compatible to Linux and Windows client systems
+- Compatibility: both Linux and Windows clients
+- Security: passwords are stored as hashes and no one can enumerate user details though protocol
+- Reliability: fast, build from scratch protocol which allows multiple connections at the same time
+- User-friendly: smooth and well-designed interface for users
+
+
 - You can create and manage Secret Santa groups
 - You can create templates for the email text
 - You can send automatically and randomly pair people from a group and send them the pairing result
+- You are alerted if there are issues with the mailing system
 
 ## Requirements
 
@@ -34,25 +40,28 @@ This information will be send by email.
 
 ## Installation
 
-### Binary release
-Simply download the binary files for your operating system and run them.
-
-### Script release
 - `sudo apt-get update`
 - `sudo apt-get install -y python3.8  python3-pip`
-- `pip install PyQt5`
+- `sudo apt-get install python3-pyqt5`
+- `sudo apt-get install pyqt5-dev-tools`
+- `sudo apt-get install qttools5-dev-tools`
 - `git clone https://github.com/cristi799/SecretSanta`
-- `cd SecretSanta && python server.py& && python auth.py&`
+- `cd SecretSanta && python3 server.py& && python3 auth.py`
 
+Also, using pyinstaller, you can generate portable executables for both Windows and Linux:
+	- `pip3 install pyinstaller`
+	- `pyinstaller --onefile auth.py && pyinstaller --onefile server.py
+	` `cd dist`
+	
 Enjoy!
 	
 ## Usage
 
 ###### Server
-For the server side, you have to run server.py or the server executable.
+For the server side, you have to run server.py.
 
 ###### Client
-You will have to run auth.py or the SecretSanta executable.
+You will have to run auth.py.
 This will prompt a login window.
 Here you can create an account that will be stored on server.
 

@@ -24,7 +24,7 @@ LOG = 'logs/logs.txt'
 
 # Socket specific declarations
 MAX_BUFFER = 4096
-MAX_CLIENTS = 10
+MAX_CLIENTS = 8
 HOST = ''
 PORT = 9001
 sock = socket.socket()
