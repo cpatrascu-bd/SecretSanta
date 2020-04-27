@@ -49,9 +49,9 @@ This information will be send by email.
 - `cd SecretSanta && python3 server.py& && python3 auth.py`
 
 Also, using pyinstaller, you can generate portable executables for both Windows and Linux:
-	- `pip3 install pyinstaller`
-	- `pyinstaller --onefile auth.py && pyinstaller --onefile server.py
-	` `cd dist`
+- `pip3 install pyinstaller`
+- `pyinstaller --onefile auth.py && pyinstaller --onefile server.py`
+- `cd dist`
 	
 Enjoy!
 	
