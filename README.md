@@ -68,9 +68,11 @@ Create Group:
 ![create_group](https://user-images.githubusercontent.com/47899873/80351035-53b54e00-887a-11ea-99bb-51ba4276ee47.png)
 
 View Groups:
+
 ![view_groups](https://user-images.githubusercontent.com/47899873/80351070-5fa11000-887a-11ea-98d3-d0b70edde5d1.png)
 
 Create Template:
+
 
 ![Create_template](https://user-images.githubusercontent.com/47899873/80351177-8e1eeb00-887a-11ea-8c1a-a725cd27f6ce.png)
 
