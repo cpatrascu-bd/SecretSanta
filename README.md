@@ -69,9 +69,11 @@ View Groups:
 ![view_groups](https://user-images.githubusercontent.com/47899873/80351070-5fa11000-887a-11ea-98d3-d0b70edde5d1.png)
 
 Create Template:
+
 ![Create_template](https://user-images.githubusercontent.com/47899873/80351177-8e1eeb00-887a-11ea-8c1a-a725cd27f6ce.png)
 
 View Templates:
+
 ![view_templates](https://user-images.githubusercontent.com/47899873/80351234-a5f66f00-887a-11ea-8e67-b56fc9b9723a.png)
 
 When you create a group, you become admin of that group.
