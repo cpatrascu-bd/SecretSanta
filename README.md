@@ -28,7 +28,7 @@ This information will be send by email.
 
 - At least 1GB RAM and i3 4th series
 - Python3.7 or above
-- The following python modules:
+- The following python modules(only for manual build):
 	- PyQt5
 - Internet connection
 
@@ -49,10 +49,10 @@ Enjoy!
 ## Usage
 
 ###### Server
-For the server side, you have to run server.py.
+For the server side, you have to run server.py or the server executable.
 
 ###### Client
-You will have to run auth.py.
+You will have to run auth.py or the SecretSanta executable.
 This will prompt a login window.
 Here you can create an account that will be stored on server.
 
