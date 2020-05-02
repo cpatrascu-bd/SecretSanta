@@ -229,7 +229,7 @@ class ViewRequests(QDialog):
         cancel_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         cancel_button.setMaximumWidth(int(parent.width / 10))
         cancel_button.setMinimumHeight(int(parent.height / 15))
-        cancel_button.clicked.connect(self.close)
+        cancel_button.clicked.connect(self.cancel)
 
         layout = QGridLayout()
 
@@ -260,7 +260,7 @@ class ViewRequests(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
         if ret == ReturnCodes.CONNECTION_ERROR:
             alert(ERROR, ERROR, CONNECTION_ERROR, parent=self)
@@ -283,7 +283,7 @@ class ViewRequests(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
         if ret == ReturnCodes.CONNECTION_ERROR:
             alert(ERROR, ERROR, CONNECTION_ERROR, parent=self)
@@ -299,12 +299,12 @@ class ViewRequests(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.RELOGIN:
             alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.UNKNOWN_ERROR:
@@ -313,6 +313,11 @@ class ViewRequests(QDialog):
 
         if ret == ReturnCodes.SUCCESS:
             self.model.setStringList(requests)
+
+    def cancel(self):
+        self.timer.stop()
+        self.timer.deleteLater()
+        self.close()
 
 
 class ViewGroup(QDialog):
@@ -342,7 +347,7 @@ class ViewGroup(QDialog):
         close_button = auth.TransparentButton(text="Back", font_size=10, parent=self)
         close_button.setMaximumWidth(int(parent.width / 10))
         close_button.setMinimumHeight(int(parent.height / 15))
-        close_button.clicked.connect(self.exit)
+        close_button.clicked.connect(self.cancel)
 
         self.layout = QGridLayout()
         self.layout.addWidget(group_name_label, 0, 0, 1, 2, alignment=Qt.AlignCenter)
@@ -417,12 +422,12 @@ class ViewGroup(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.RELOGIN:
             alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
-            self.close()
+            self.cancel()
 
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
@@ -440,7 +445,7 @@ class ViewGroup(QDialog):
         ret = self.client.remove_user(username, self.group_name)
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.INVALID_USER:
@@ -468,7 +473,7 @@ class ViewGroup(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.INVALID_GROUP:
@@ -486,7 +491,7 @@ class ViewGroup(QDialog):
         if ret == ReturnCodes.SUCCESS:
             alert(SUCCESS, SUCCESS, SUCCESSFUL_DELETE_GROUP, parent=self.parent)
             self.parent.refresh_groups_list()
-            self.close()
+            self.cancel()
 
     def send_emails(self):
         ret, templates = self.client.get_templates()
@@ -506,12 +511,12 @@ class ViewGroup(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.RELOGIN:
             alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
-            self.close()
+            self.cancel()
 
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
@@ -525,12 +530,12 @@ class ViewGroup(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.YOU_ADMIN:
@@ -538,10 +543,12 @@ class ViewGroup(QDialog):
 
         if ret == ReturnCodes.SUCCESS:
             alert(SUCCESS, SUCCESS, LEAVE_GROUP_SUCCESS, parent=self.parent)
-            self.close()
+            self.cancel()
             self.refresh_users_list()
 
-    def exit(self):
+    def cancel(self):
+        self.timer.stop()
+        self.timer.deleteLater()
         self.close()
 
 
@@ -604,14 +611,14 @@ class ViewGroups(QDialog):
             return
 
         if ret == ReturnCodes.NOT_AUTH:
-            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent.parent)
-            self.close()
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
+            self.cancel()
             self.parent.return_to_login()
             return
 
         if ret == ReturnCodes.RELOGIN:
             alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent.parent)
-            self.close()
+            self.cancel()
             self.parent.return_to_login()
             return
 
@@ -635,6 +642,8 @@ class ViewGroups(QDialog):
         joiner.show()
 
     def cancel(self):
+        self.timer.stop()
+        self.timer.deleteLater()
         self.close()
 
     def view_group(self):
@@ -647,13 +656,13 @@ class ViewGroups(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             self.parent.return_to_login()
             return
 
         if ret == ReturnCodes.RELOGIN:
             alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
-            self.close()
+            self.cancel()
             self.parent.return_to_login()
 
         if ret == ReturnCodes.UNKNOWN_ERROR:

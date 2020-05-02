@@ -228,16 +228,18 @@ class ViewTemplates(QDialog):
         ret, templates = self.client.get_templates()
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self.parent)
-            self.close()
+            self.cancel()
             return
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent.parent)
-            self.close()
+            self.cancel()
             self.parent.return_to_login()
             return
         self.model.setStringList(templates)
 
     def cancel(self):
+        self.timer.stop()
+        self.timer.deleteLater()
         self.close()
 
     def edit_template(self):
@@ -250,12 +252,12 @@ class ViewTemplates(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.RELOGIN:
             alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
-            self.close()
+            self.cancel()
             return
 
         if ret == ReturnCodes.UNKNOWN_ERROR:
@@ -275,13 +277,13 @@ class ViewTemplates(QDialog):
 
         if ret == ReturnCodes.NOT_AUTH:
             alert(ERROR, ERROR, NOT_AUTH, parent=self.parent)
-            self.close()
+            self.cancel()
             self.parent.return_to_login()
             return
 
         if ret == ReturnCodes.RELOGIN:
             alert(ERROR, ERROR, RELOGIN_ERR, parent=self.parent)
-            self.close()
+            self.cancel()
             self.parent.return_to_login()
 
         if ret == ReturnCodes.UNKNOWN_ERROR:
