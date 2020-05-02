@@ -26,7 +26,7 @@ class CreateTemplateGUI(QDialog):
 
         self.parent = parent
         self.client = client
-        self.template_max_length = 500
+        self.template_max_length = MAX_TEMPLATE_LENGTH
 
         self.edit_template_name = QLineEdit()
         self.edit_template_name.setStyleSheet(TEMPLATE_CREATE_LINEEDIT_SS)
@@ -213,12 +213,29 @@ class ViewTemplates(QDialog):
         layout.addWidget(ok_button, 0, 1)
         layout.addWidget(cancel_button, 1, 1)
 
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.refresh_list)
+        self.timer.start(REFRESH_INTERVAL)
+
         self.model = QStringListModel()
         self.model.setStringList(templates)
         self.list_templates.setModel(self.model)
         self.setLayout(layout)
         self.resize(self.width, self.height)
         self.setWindowTitle("View Templates")
+
+    def refresh_list(self):
+        ret, templates = self.client.get_templates()
+        if ret == ReturnCodes.UNKNOWN_ERROR:
+            alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self.parent)
+            self.close()
+            return
+        if ret == ReturnCodes.NOT_AUTH:
+            alert(ERROR, ERROR, NOT_AUTH, parent=self.parent.parent)
+            self.close()
+            self.parent.return_to_login()
+            return
+        self.model.setStringList(templates)
 
     def cancel(self):
         self.close()

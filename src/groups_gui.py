@@ -238,6 +238,10 @@ class ViewRequests(QDialog):
         layout.addWidget(reject_button, 1, 1)
         layout.addWidget(cancel_button, 2, 1)
 
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.refresh_list)
+        self.timer.start(REFRESH_INTERVAL)
+
         self.model = QStringListModel()
         self.model.setStringList(requests)
         self.list_requests.setModel(self.model)
@@ -383,6 +387,10 @@ class ViewGroup(QDialog):
                 self.layout.addWidget(join_group_button, 3, 1)
 
         self.layout.addWidget(close_button, 6, 1)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.refresh_users_list)
+        self.timer.start(REFRESH_INTERVAL)
 
         self.setLayout(self.layout)
         self.setWindowTitle("Group " + group_name)
@@ -575,6 +583,10 @@ class ViewGroups(QDialog):
         layout.addWidget(ok_button, 0, 1)
         layout.addWidget(join_button, 1, 1)
         layout.addWidget(cancel_button, 2, 1)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.refresh_groups_list)
+        self.timer.start(REFRESH_INTERVAL)
 
         self.model = QStringListModel()
         self.model.setStringList(groups)

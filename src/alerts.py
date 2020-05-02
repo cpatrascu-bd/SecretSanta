@@ -39,6 +39,8 @@ EMAILS_ALREADY_SENT = "You have already sent the emails! For another round of Se
 NO_INDEX_SELECTED = "Please select an element from the list"
 ALREADY_IN_GROUP = "You are already in this group!"
 
+REFRESH_INTERVAL = 5000
+MAX_TEMPLATE_LENGTH = 500
 
 def alert(type, title, text, parent=None):
     alert_msg = QMessageBox(parent=parent)
