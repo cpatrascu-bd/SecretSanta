@@ -1,5 +1,6 @@
 from utils import *
 import ast
+from datetime import datetime, timedelta
 
 
 class Client:
@@ -263,22 +264,29 @@ class Client:
 
     def send_emails(self, group_name, template_name="", text_template="", flag=False):
         if self.token == '':
-            return ReturnCodes.NOT_AUTH
+            return ReturnCodes.NOT_AUTH, ''
         if flag:
             message = DELIMITER.join(['SEND', 'EMAILS', group_name, text_template, str(flag), self.token])
         else:
             message = DELIMITER.join(['SEND', 'EMAILS', group_name, template_name, str(flag), self.token])
         answer = Utils.send_message_to_server(message)
         if answer == 'communication_error':
-            return ReturnCodes.CONNECTION_ERROR
+            return ReturnCodes.CONNECTION_ERROR, ''
         if answer[0] == '1':
-            return ReturnCodes.SUCCESS
+            return ReturnCodes.SUCCESS, ''
         if answer[2:] == 'User not admin of the group':
-            return ReturnCodes.NOT_ADMIN
-        if answer[2:] == 'You can send emails only once in 4 days':
-            return ReturnCodes.WAIT
+            return ReturnCodes.NOT_ADMIN, ''
+        if 'You can send emails again starting from' in answer[2:]:
+            answer_split = answer.split()
+            date = answer_split[8]
+            time = answer_split[9]
+            date = datetime.strptime(date, "%Y-%m-%d")
+            date = date + timedelta(days = 4)
+            date = date.strftime("%Y-%m-%d")
 
-        return ReturnCodes.UNKNOWN_ERROR
+            return ReturnCodes.WAIT, date + " " + time
+
+        return ReturnCodes.UNKNOWN_ERROR, ''
 
     def if_admin(self):
         return self.current_group_admin
