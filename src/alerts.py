@@ -35,7 +35,7 @@ INVALID_DELETE_GROUP = "The group you are trying to remove does not exist!"
 SUCCESSFUL_DELETE_GROUP = "Group deleted successfully!"
 SUCCESSFUL_SEND_REQUEST = "You have successfully sent the request to the server!"
 EMAILS_ALREADY_SENT = "You have already sent the emails! For another round of Secret Santa with the same group" \
-                      " try again in at least 4 days!"
+                      " try again in "
 NO_INDEX_SELECTED = "Please select an element from the list"
 ALREADY_IN_GROUP = "You are already in this group!"
 

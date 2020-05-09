@@ -170,6 +170,8 @@ class AuthForm(QDialog):
                                 " and at least one of each of the following: digit, uppercase letter, "
                                 "lowercase letter, symbol(%,@,#,7,etc.)", parent=self)
             self.edit_password.setFocus()
+        if ret == ReturnCodes.CONNECTION_ERROR:
+            alert(ERROR, ERROR, CONNECTION_ERROR, parent=self)
 
     def log_user(self):
 

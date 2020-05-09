@@ -147,14 +147,15 @@ class EditTemplate(QDialog):
     def send_emails(self):
         changed = self.text_box.toPlainText() != self.selected_template
         if changed:
-            ret = self.client.send_emails(self.group, text_template=self.text_box.toPlainText(), flag=True)
+            ret, time = self.client.send_emails(self.group, text_template=self.text_box.toPlainText(), flag=True)
         else:
-            ret = self.client.send_emails(self.group, template_name=self.selected_template_name, flag=False)
+            ret, time = self.client.send_emails(self.group, template_name=self.selected_template_name, flag=False)
         if ret == ReturnCodes.UNKNOWN_ERROR:
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
         if ret == ReturnCodes.WAIT:
-            alert(WARNING, WARNING, EMAILS_ALREADY_SENT, parent=self.parent.parent)
+            err_mgs = EMAILS_ALREADY_SENT + time + " !"
+            alert(WARNING, WARNING, err_mgs, parent=self.parent.parent)
             self.close()
             self.parent.close()
             return
