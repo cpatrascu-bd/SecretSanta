@@ -211,7 +211,7 @@ def group_timeout(name, token):
         timeouts[name] = time.time()
         return SUCCESS, 'Request successfully submitted'
 
-    return FAIL, 'You can send emails again starting from {}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timeouts[name])))
+    return FAIL, 'You can send emails again starting from {}'.format(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timeouts[name] + DAYS_LIMIT)))
 
 
 def add_to_group(username, group, password_hash, token):

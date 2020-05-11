@@ -154,7 +154,7 @@ class EditTemplate(QDialog):
             alert(WARNING, MI_SCUZI, UNKNOWN_ERROR_TEXT, parent=self)
             return
         if ret == ReturnCodes.WAIT:
-            err_mgs = EMAILS_ALREADY_SENT + time + " !"
+            err_mgs = EMAILS_ALREADY_SENT + time + " UTC !"
             alert(WARNING, WARNING, err_mgs, parent=self.parent.parent)
             self.close()
             self.parent.close()
